@@ -6,109 +6,124 @@
 <meta name="description" content="地方創生課程互動島：在島上走走，挑一面待解的旗子，提出你的解方。">
 <title>地方創生解方島</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=DotGothic16&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
 <style>
-html,body{margin:0}
-
-/* Layout: 一座可以走動的像素島佔滿畫面；問題以旗子插在五個面向的聚落；點旗子從側邊（手機為底部）拉出解方面板 */
+/* Layout: 柔和粉彩的 low-poly 3D 島佔滿畫面；白色膠囊按鈕浮在上方；點旗子從右側（手機為底部）拉出解方面板 */
 :root{
-  --bg:#e8eef0; --panel:#fbfcfb; --ink:#17232b; --muted:#5a6872; --line:#d3dcdf;
-  --sea:#2b6f86; --accent:#e0743a; --accent-ink:#fff; --good:#3f8f52; --warn:#c0392b;
-  --c-ren:#d0533f; --c-wen:#8a5bb3; --c-di:#3d8a50; --c-chan:#d39a1d; --c-jing:#2f86a3;
-  --pixel:"DotGothic16","Noto Sans TC",monospace;
+  --bg:#eef5f1; --panel:#ffffff; --ink:#173a40; --muted:#5b7479; --line:#d7e5e2;
+  --accent:#0e5a63; --accent-ink:#ffffff; --accent-soft:#dcefee; --warn:#c0453a;
+  --sky:#d4eef0;
+  --c-ren:#d0533f; --c-wen:#8a5bb3; --c-di:#3d8a50; --c-chan:#c08419; --c-jing:#2f86a3;
+  --display:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
   --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0f1a20; --panel:#18252d; --ink:#e6edf0; --muted:#9db0ba; --line:#2b3b45;
-  --sea:#5fb0c9; --accent:#f08c52; --accent-ink:#1a1008; --good:#6cc27f; --warn:#ef7b6c;
+  --bg:#0f1c1f; --panel:#172a2e; --ink:#e3efed; --muted:#9cb6b8; --line:#28403f;
+  --accent:#5cc1c4; --accent-ink:#082326; --accent-soft:#1e3a3d; --warn:#ef7b6c; --sky:#d4eef0;
   --c-ren:#ef8370; --c-wen:#b892dc; --c-di:#71c084; --c-chan:#ecbd4e; --c-jing:#62b9d6; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0f1a20; --panel:#18252d; --ink:#e6edf0; --muted:#9db0ba; --line:#2b3b45;
-  --sea:#5fb0c9; --accent:#f08c52; --accent-ink:#1a1008; --good:#6cc27f; --warn:#ef7b6c;
+  --bg:#0f1c1f; --panel:#172a2e; --ink:#e3efed; --muted:#9cb6b8; --line:#28403f;
+  --accent:#5cc1c4; --accent-ink:#082326; --accent-soft:#1e3a3d; --warn:#ef7b6c; --sky:#d4eef0;
   --c-ren:#ef8370; --c-wen:#b892dc; --c-di:#71c084; --c-chan:#ecbd4e; --c-jing:#62b9d6; color-scheme:dark}
+html,body{margin:0}
+[hidden]{display:none!important}
 *{box-sizing:border-box}
 html,body{height:100%}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.65}
 .app{height:100%;display:flex;flex-direction:column;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));padding-block:12px;gap:10px;max-width:1400px;margin:0 auto}
-.top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px}
-.brand{display:flex;flex-direction:column;line-height:1.2;margin-right:auto;min-width:0}
-.brand h1{font-family:var(--pixel);font-size:26px;margin:0;letter-spacing:.06em}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
+.brand{display:flex;flex-direction:column;line-height:1.25;margin-right:auto;min-width:0}
+.brand h1{font-family:var(--display);font-weight:900;font-size:25px;margin:0;letter-spacing:.04em;color:var(--accent)}
 .brand span{font-size:13px;color:var(--muted)}
 .stats{display:flex;gap:6px;flex-wrap:wrap}
-.stat{font-family:var(--pixel);font-size:14px;padding:3px 10px;border-radius:3px;background:var(--panel);border:1px solid var(--line);font-variant-numeric:tabular-nums}
-.stat b{color:var(--accent)}
+.stat{font-size:13px;padding:3px 12px;border-radius:999px;background:var(--panel);border:1px solid var(--line);font-variant-numeric:tabular-nums;color:var(--muted)}
+.stat b{color:var(--ink);font-size:15px}
 .tbtns{display:flex;gap:6px;flex-wrap:wrap}
 button{font:inherit}
-.btn{cursor:pointer;border:2px solid var(--ink);background:var(--panel);color:var(--ink);padding:5px 12px;border-radius:3px;font-weight:700;font-size:14px;box-shadow:2px 2px 0 var(--ink)}
-.btn:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 var(--ink)}
-.btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink)}
-.btn.primary{background:var(--accent);color:var(--accent-ink)}
-.btn:focus-visible,.chipbtn:focus-visible,.icon:focus-visible{outline:3px solid var(--sea);outline-offset:2px}
-.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.notice{font-size:13px;padding:7px 12px;border-radius:3px;border:1px dashed var(--accent);background:var(--panel)}
-.stage{position:relative;flex:1;min-height:380px;border:3px solid var(--ink);border-radius:4px;overflow:hidden;background:#2b6f86}
-canvas#map{display:block;width:100%;height:100%;image-rendering:pixelated;cursor:pointer;touch-action:none}
-.hud{position:absolute;left:10px;bottom:10px;display:flex;gap:6px;flex-wrap:wrap}
-.icon{cursor:pointer;width:38px;height:38px;border:2px solid #17232b;background:#fbfcfb;color:#17232b;border-radius:3px;font-size:18px;font-weight:900;box-shadow:2px 2px 0 #17232b}
-.legend{position:absolute;right:10px;bottom:10px;background:rgba(251,252,251,.92);color:#17232b;border:2px solid #17232b;border-radius:3px;padding:6px 10px;font-size:12px;display:flex;flex-direction:column;gap:2px}
-.legend i{display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:-1px}
-.toast{position:absolute;left:50%;top:12px;transform:translateX(-50%);background:#17232b;color:#fff;padding:6px 14px;border-radius:3px;font-size:14px;pointer-events:none;max-width:90%;text-align:center}
-/* 面板 */
-.panel{position:absolute;top:0;right:0;bottom:0;width:min(420px,100%);background:var(--panel);color:var(--ink);border-left:3px solid var(--ink);display:flex;flex-direction:column;z-index:5}
+.btn{cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:6px 14px;border-radius:999px;font-weight:700;font-size:14px;box-shadow:0 1px 3px rgba(20,60,64,.08);transition:background .15s,border-color .15s}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:focus-visible,.chipbtn:focus-visible,.icon:focus-visible,.fb:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.notice{font-size:13px;padding:7px 14px;border-radius:12px;background:var(--accent-soft);color:var(--ink)}
+.stage{position:relative;flex:1;min-height:380px;border-radius:18px;overflow:hidden;background:var(--sky);box-shadow:inset 0 0 0 1px rgba(14,90,99,.12)}
+#map3d{position:absolute;inset:0}
+.nogl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:#173a40}
+.labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.zl{position:absolute;left:0;top:0;transform:translate(-50%,-100%);white-space:nowrap;background:rgba(255,255,255,.94);color:#173a40;border-radius:999px;padding:3px 12px 3px 8px;font-size:14px;font-weight:700;box-shadow:0 2px 8px rgba(20,60,64,.15);display:flex;align-items:center;gap:6px}
+.zl i{width:10px;height:10px;border-radius:50%;flex:none}
+.zl.compact .nm{display:none}
+.zl.compact{padding:3px 8px}
+.fb{position:absolute;left:0;top:0;transform:translate(-50%,-100%);pointer-events:auto;cursor:pointer;border:none;background:#fff;color:#173a40;border-radius:999px;padding:1px 8px;font-size:12px;font-weight:700;box-shadow:0 1px 5px rgba(20,60,64,.2);white-space:nowrap;font-variant-numeric:tabular-nums;border-bottom:3px solid var(--c)}
+.fb.open{background:#fff3f1}
+.fb.sel{background:#173a40;color:#fff}
+.me,.other{position:absolute;left:0;top:0;transform:translate(-50%,-100%);min-width:36px;height:30px;padding:0 12px;border-radius:999px;font-weight:900;font-size:15px;display:flex;align-items:center;justify-content:center;white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis}
+.me{background:#1f5560;color:#fff;box-shadow:0 3px 10px rgba(20,60,64,.3);z-index:2}
+.other{background:rgba(255,255,255,.95);color:#173a40;font-weight:700;font-size:13px;height:26px;box-shadow:0 2px 6px rgba(20,60,64,.18)}
+.hint{position:absolute;left:0;top:0;transform:translate(-50%,-100%);background:#173a40;color:#fff;border-radius:999px;padding:3px 12px;font-size:13px;white-space:nowrap}
+.hud{position:absolute;left:12px;bottom:12px;display:flex;gap:8px;flex-wrap:wrap}
+.icon{cursor:pointer;width:40px;height:40px;border:none;background:rgba(255,255,255,.95);color:#173a40;border-radius:50%;font-size:18px;font-weight:900;box-shadow:0 2px 8px rgba(20,60,64,.18)}
+.legend{position:absolute;right:12px;bottom:12px;background:rgba(255,255,255,.94);color:#173a40;border-radius:14px;padding:8px 12px;font-size:12px;display:flex;flex-direction:column;gap:2px;box-shadow:0 2px 8px rgba(20,60,64,.15)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.tip{position:absolute;left:12px;top:12px;background:rgba(255,255,255,.9);color:#173a40;border-radius:999px;padding:3px 12px;font-size:12px}
+.toast{position:absolute;left:50%;top:12px;transform:translateX(-50%);background:#173a40;color:#fff;padding:6px 16px;border-radius:999px;font-size:14px;pointer-events:none;max-width:90%;text-align:center;z-index:6}
+.panel{position:absolute;top:10px;right:10px;bottom:10px;width:min(420px,calc(100% - 20px));background:var(--panel);color:var(--ink);border-radius:18px;box-shadow:0 8px 30px rgba(20,60,64,.25);display:flex;flex-direction:column;z-index:5;overflow:hidden}
 .panel .ph{display:flex;align-items:flex-start;gap:10px;padding:14px 16px 10px;border-bottom:1px solid var(--line)}
 .panel .ph h2{font-size:19px;margin:4px 0 0;line-height:1.4;text-wrap:balance}
 .panel .close{margin-left:auto;flex:none}
 .panel .pb{overflow-y:auto;padding:12px 16px 20px;display:flex;flex-direction:column;gap:14px;min-height:0}
-.area{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#fff;background:var(--c);padding:1px 8px;border-radius:2px}
+.area{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#fff;background:var(--c);padding:1px 10px;border-radius:999px}
 .place{font-size:12px;color:var(--muted);margin-left:6px}
 .desc{margin:0;color:var(--ink)}
-.state{font-family:var(--pixel);font-size:13px;color:var(--muted)}
+.state{font-size:13px;color:var(--muted);background:var(--accent-soft);border-radius:10px;padding:6px 10px}
 .sol-list{display:flex;flex-direction:column;gap:8px;list-style:none;margin:0;padding:0}
-.sol{border:1px solid var(--line);border-radius:4px;padding:10px 12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px}
+.sol{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px}
 .sol .t{overflow-wrap:anywhere;white-space:pre-wrap}
 .sol .meta{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:12px;color:var(--muted)}
-.mini{font-size:11px;font-weight:700;color:#fff;background:var(--c);padding:0 6px;border-radius:2px}
-.vote{align-self:start;cursor:pointer;border:2px solid var(--ink);background:var(--panel);color:var(--ink);border-radius:3px;padding:2px 8px;font-weight:700;font-variant-numeric:tabular-nums}
-.vote[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.mini{font-size:11px;font-weight:700;color:#fff;background:var(--c);padding:0 7px;border-radius:999px}
+.vote{align-self:start;cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:2px 10px;font-weight:700;font-variant-numeric:tabular-nums}
+.vote[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .del{cursor:pointer;border:none;background:none;color:var(--muted);font-size:12px;text-decoration:underline;padding:0}
-.form{display:flex;flex-direction:column;gap:8px;padding:12px;border:2px solid var(--ink);border-radius:4px;background:var(--bg)}
+.form{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:14px;background:var(--bg)}
 .form h3{margin:0;font-size:16px}
 label.lb{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
-textarea,input[type=text],input[type=password],select{font:inherit;width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:3px;background:var(--panel);color:var(--ink)}
+textarea,input[type=text],input[type=password],select{font:inherit;width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink)}
 textarea{min-height:84px;resize:vertical}
 .uses{display:flex;flex-wrap:wrap;gap:6px}
-.chipbtn{cursor:pointer;border:2px solid var(--c);color:var(--c);background:var(--panel);border-radius:3px;padding:2px 10px;font-weight:700;font-size:13px}
+.chipbtn{cursor:pointer;border:1.5px solid var(--c);color:var(--c);background:var(--panel);border-radius:999px;padding:2px 11px;font-weight:700;font-size:13px}
 .chipbtn[aria-pressed="true"]{background:var(--c);color:#fff}
 .err{color:var(--warn);font-size:13px;min-height:1em}
-.empty{color:var(--muted);font-size:14px;text-align:center;padding:12px;border:1px dashed var(--line);border-radius:4px}
+.empty{color:var(--muted);font-size:14px;text-align:center;padding:12px;border:1px dashed var(--line);border-radius:12px}
 .plist{display:flex;flex-direction:column;gap:6px;list-style:none;margin:0;padding:0}
-.plist button{all:unset;cursor:pointer;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center;width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--line);border-radius:4px}
-.plist button:hover{border-color:var(--ink)}
-.plist button:focus-visible{outline:3px solid var(--sea)}
-.plist .n{font-family:var(--pixel);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.plist button{all:unset;cursor:pointer;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center;width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--line);border-radius:12px}
+.plist button:hover{border-color:var(--accent)}
+.plist button:focus-visible{outline:3px solid var(--accent)}
+.plist .n{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
 .filters{display:flex;flex-wrap:wrap;gap:6px}
 .howto ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
-.copybox{white-space:pre-wrap;font-size:13px;background:var(--bg);border:1px solid var(--line);border-radius:3px;padding:8px;max-height:160px;overflow:auto}
+.copybox{white-space:pre-wrap;font-size:13px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px;max-height:160px;overflow:auto}
 @media (max-width:700px){
   .brand h1{font-size:21px}
-  .panel{top:auto;left:0;width:100%;height:72%;border-left:none;border-top:3px solid var(--ink);padding-bottom:env(safe-area-inset-bottom,0px)}
-  .legend{display:none}
+  .panel{top:auto;left:0;right:0;bottom:0;width:100%;height:72%;border-radius:18px 18px 0 0;padding-bottom:env(safe-area-inset-bottom,0px)}
+  .legend,.tip{display:none}
+  .zl{font-size:12px}
 }
-@media (prefers-reduced-motion:reduce){.btn,.btn:hover{transform:none}}
 </style>
 
 </head>
 <body>
 <div class="app">
   <div class="top">
-    <div class="brand"><h1>地方創生解方島</h1><span>在島上走走，挑一面待解的旗子，提出你的解方</span></div>
+    <div class="brand"><h1>地方創生解方島</h1><span>8 個主題、40 個地方問題，挑一面待解的旗子提出你的解方</span></div>
     <div class="stats" aria-live="polite">
       <span class="stat">待解 <b id="sOpen">0</b></span>
       <span class="stat">問題 <b id="sProb">0</b></span>
       <span class="stat">解方 <b id="sSol">0</b></span>
       <span class="stat">我提出 <b id="sMine">0</b></span>
+      <span class="stat">線上 <b id="sOnline">1</b></span>
     </div>
     <div class="tbtns">
+      <button class="btn" id="bMe" aria-label="修改暱稱">👤 <span id="meName">設定暱稱</span></button>
       <button class="btn" id="bList">問題清單</button>
       <button class="btn" id="bHow">怎麼玩</button>
       <button class="btn" id="bAdd">＋插一面問題旗</button>
@@ -117,16 +132,19 @@ textarea{min-height:84px;resize:vertical}
   </div>
   <div class="notice" id="notice" hidden></div>
   <div class="stage" id="stage">
-    <canvas id="map" aria-label="可走動的島嶼地圖。用問題清單按鈕可以用列表瀏覽所有問題。"></canvas>
+    <div id="map3d" role="img" aria-label="可走動的 3D 島嶼地圖。也可以用「問題清單」按鈕瀏覽所有問題。"></div>
+    <div class="labels" id="labels"></div>
+    <div class="tip">點地面走路・拖曳旋轉・滾輪縮放</div>
     <div class="hud">
       <button class="icon" id="zIn" aria-label="放大">＋</button>
       <button class="icon" id="zOut" aria-label="縮小">－</button>
       <button class="icon" id="zAll" aria-label="看全島">⛶</button>
+      <button class="icon" id="zRot" aria-label="視角回正（北在上）">⟲</button>
     </div>
     <div class="legend" aria-hidden="true">
-      <div><i style="background:#c0392b"></i>紅旗：還沒有解方</div>
-      <div><i style="background:#c99a45"></i>鷹架：1–2 個解方</div>
-      <div><i style="background:#f4cf55"></i>亮燈小屋：3 個以上</div>
+      <div><i style="background:#e0574a"></i>🚩 紅旗：還沒有解方</div>
+      <div><i style="background:#d9b48a"></i>🔨 鷹架：1–2 個解方</div>
+      <div><i style="background:#ffd86b"></i>🏠 亮燈小屋：3 個以上</div>
     </div>
     <div class="toast" id="toast" hidden></div>
     <aside class="panel" id="panel" hidden aria-live="polite">
@@ -136,25 +154,75 @@ textarea{min-height:84px;resize:vertical}
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 (function(){
 "use strict";
 /* ---------- 基本設定 ---------- */
+// 島上的 8 個主題區（問題的分類）
 const AREAS={
-  ren:{ch:"人",name:"人・聚落",full:"人力資源",color:"#d0533f",css:"var(--c-ren)"},
-  wen:{ch:"文",name:"文・廟埕",full:"文化歷史",color:"#8a5bb3",css:"var(--c-wen)"},
-  di:{ch:"地",name:"地・山林",full:"地理環境",color:"#3d8a50",css:"var(--c-di)"},
-  chan:{ch:"產",name:"產・田園",full:"產業經濟",color:"#d39a1d",css:"var(--c-chan)"},
-  jing:{ch:"景",name:"景・港口老街",full:"景觀空間",color:"#2f86a3",css:"var(--c-jing)"}
+  t1:{ch:"①",name:"① 人口與青年",full:"人口與青年",q:"人口正在改變",color:"#c8423b",css:"#c8423b"},
+  t2:{ch:"②",name:"② 產業與就業",full:"產業與就業",q:"地方如何養活自己",color:"#b8860b",css:"#b8860b"},
+  t3:{ch:"③",name:"③ 觀光與消費",full:"觀光與消費",q:"遊客來了，然後呢？",color:"#2f86a3",css:"#2f86a3"},
+  t4:{ch:"④",name:"④ 生活機能",full:"生活機能",q:"留下來生活容易嗎？",color:"#b04f8f",css:"#b04f8f"},
+  t5:{ch:"⑤",name:"⑤ 社區與公共空間",full:"社區與公共空間",q:"地方還有交流嗎？",color:"#d9692a",css:"#d9692a"},
+  t6:{ch:"⑥",name:"⑥ 文化與地方認同",full:"文化與地方認同",q:"故事會不會消失？",color:"#7a54b0",css:"#7a54b0"},
+  t7:{ch:"⑦",name:"⑦ 環境與永續",full:"環境與永續",q:"地方環境正在改變",color:"#3d8a50",css:"#3d8a50"},
+  t8:{ch:"⑧",name:"⑧ 地方發展與資訊",full:"地方發展與資訊",q:"誰決定地方的未來？",color:"#56677a",css:"#56677a"}
 };
 const AKEYS=Object.keys(AREAS);
-const CH2KEY={"人":"ren","文":"wen","地":"di","產":"chan","产":"chan","景":"jing"};
-const EXAMPLES=[
-  {id:"ex1",area:"ren",place:"範例・山城鎮",title:"年輕人畢業後都去都市工作，鎮上只剩長輩",desc:"國小學生數十年內少了一半，傳統技藝沒有人接手。"},
-  {id:"ex2",area:"wen",place:"範例・山城鎮",title:"老廟的遶境越來越冷清，扛轎的人不夠",desc:"在地故事只存在長輩記憶裡，沒有被記錄。"},
-  {id:"ex3",area:"di",place:"範例・山城鎮",title:"溪邊螢火蟲季遊客亂丟垃圾",desc:"生態資源很好，但沒有人管理，居民覺得觀光只帶來困擾。"},
-  {id:"ex4",area:"chan",place:"範例・山城鎮",title:"茶葉只能低價賣給盤商",desc:"老製茶廠停工，農民沒有自己的品牌和通路。"},
-  {id:"ex5",area:"jing",place:"範例・山城鎮",title:"廢校的國小校舍閒置多年",desc:"空間很大、景色好，但沒有經費維護，越來越破舊。"}
+// 解方用到的地方資源（人文地產景）
+const RES={
+  ren:{ch:"人",full:"人力資源",css:"var(--c-ren)"},
+  wen:{ch:"文",full:"文化歷史",css:"var(--c-wen)"},
+  di:{ch:"地",full:"地理環境",css:"var(--c-di)"},
+  chan:{ch:"產",full:"產業經濟",css:"var(--c-chan)"},
+  jing:{ch:"景",full:"景觀空間",css:"var(--c-jing)"}
+};
+const RKEYS=Object.keys(RES);
+function themeKey(s){s=String(s||"").trim();const m={"①":1,"②":2,"③":3,"④":4,"⑤":5,"⑥":6,"⑦":7,"⑧":8}[s]||parseInt(s,10);return m>=1&&m<=8?"t"+m:null}
+// 課堂盤點出的 40 個問題：[主題, 編號, 問題]
+const PRESET=[
+["t1","01","高齡人口比例持續增加，地方逐漸走向超高齡社會。"],
+["t1","02","年輕人離開家鄉工作，只有過年過節才會回來。"],
+["t1","03","年輕人離鄉後在外地定居，不再選擇返鄉生活。"],
+["t1","04","社區活動多由長者參與，年輕世代參與程度偏低。"],
+["t1","05","地方青壯年人口減少，勞動力逐漸不足。"],
+["t1","06","地方兒童人口減少，公共空間越來越少看見小孩。"],
+["t2","07","傳統農業主要依靠高齡農民，缺乏年輕人投入。"],
+["t2","08","農民年紀漸長，無力繼續耕作所有農地。"],
+["t2","09","傳統產業依賴少數高齡工作者，面臨技術與經驗傳承問題。"],
+["t2","10","地方產業受到季節影響，收入集中在特定月份。"],
+["t2","11","地方具有特色農漁產品，但銷售方式仍以傳統交易為主。"],
+["t2","12","地方產業種類相似，店家競爭激烈，部分業者難以維持經營。"],
+["t2","13","地方缺乏多元的工作機會，居民需要前往其他地區就業。"],
+["t3","14","地方活動吸引大量遊客，但活動結束後人潮迅速消失。"],
+["t3","15","遊客只在熱門景點拍照，沒有進一步認識地方。"],
+["t3","16","觀光人潮集中在特定季節，淡季缺乏遊客。"],
+["t3","17","遊客集中在特定時段消費，其他時間商圈冷清。"],
+["t3","18","地方曾經熱門的觀光活動逐漸沒落，相關業者停止營業。"],
+["t3","19","地方特色產品吸引遊客購買，但缺乏深入了解產業的機會。"],
+["t3","20","地方擁有自然景觀與特色資源，但部分景點鮮少有人造訪。"],
+["t3","21","觀光住宿設施逐漸增加，但地方居民是否受益仍不清楚。"],
+["t4","22","地方缺乏日常購物場所，居民需要前往其他地區採買。"],
+["t4","23","地方餐飲選擇有限，居民需要到其他地區用餐。"],
+["t4","24","地方只剩少數雜貨店，傳統商店逐漸消失。"],
+["t4","25","偏遠地區醫療資源不足，高齡居民難以及時獲得醫療照護。"],
+["t4","26","地方大眾運輸使用人數偏少，交通服務與居民需求可能存在落差。"],
+["t4","27","地方部分生活服務集中在特定時段，其他時間缺乏便利性。"],
+["t5","28","社區公共空間平時缺乏人潮，只有舉辦活動時才有人聚集。"],
+["t5","29","地方公共活動主要由長者參與，缺乏跨世代交流。"],
+["t5","30","地方擁有公共設施，但使用者集中於特定族群。"],
+["t5","31","社區傳統聚會場所逐漸失去日常交流功能。"],
+["t5","32","地方公共空間在夜間缺乏活動，街道逐漸冷清。"],
+["t6","33","地方傳統文化活動主要由長者維持，年輕世代參與不足。"],
+["t6","34","地方具有悠久的歷史與信仰文化，但平時缺乏參與者。"],
+["t6","35","地方居民遷移後，原有的文化與生活記憶面臨傳承困難。"],
+["t6","36","地方曾經具有代表性的產業或文化活動逐漸消失。"],
+["t7","37","海岸與公共環境出現垃圾累積，影響環境品質。"],
+["t7","38","地方自然生態與土地利用方式逐漸改變，原因尚不明確。"],
+["t8","39","地方土地開發與商業投資受到未經證實的消息影響。"],
+["t8","40","地方發展逐漸朝向觀光與商業用途，但居民的實際需求尚未被充分了解。"]
 ];
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const $=id=>document.getElementById(id);
@@ -174,11 +242,20 @@ async function api(path,body){
   if(!r.ok)throw{code:d.error||"server",status:r.status};
   return d;
 }
-let loading=false;
+let loading=false,lastVer=null,lastSync=0,lastMove=0,syncing=false;
+async function sync(){
+  if(syncing||document.hidden||!S.nick)return;syncing=true;lastSync=Date.now();
+  try{const d=await api("presence",{name:S.nick,x:Math.round(av.x),y:Math.round(av.y),d:Math.round(av.dir*100)/100});
+    setPlayers(d.players||[]);S.offline=false;
+    if(d.ver&&d.ver!==lastVer){lastVer=d.ver;load()}}
+  catch(e){if(!S.loaded)S.offline=true}
+  finally{syncing=false;lastSync=Date.now()}
+}
+
 async function load(){
   if(loading)return;loading=true;
   try{const d=await api("state");
-    S.problems=(d.problems||[]).sort((a,b)=>(a.at||0)-(b.at||0));S.solutions=d.solutions||[];S.counts=d.counts||{};S.mine=new Set(d.mine||[]);S.adminEnabled=!!d.adminEnabled;S.offline=false;S.loaded=true;
+    S.problems=(d.problems||[]).sort((a,b)=>(a.at||0)-(b.at||0));S.solutions=d.solutions||[];S.counts=d.counts||{};S.mine=new Set(d.mine||[]);S.adminEnabled=!!d.adminEnabled;S.offline=false;S.loaded=true;if(d.ver)lastVer=d.ver;
   }catch(e){S.offline=true}
   finally{loading=false}
   onData();
@@ -186,8 +263,9 @@ async function load(){
 async function initData(){
   $("bAdmin").hidden=false;$("bAdmin").textContent="老師";
   await load();
-  setInterval(()=>{if(!document.hidden)load()},12000);
-  document.addEventListener("visibilitychange",()=>{if(!document.hidden)load()});
+  // 線上同學：走動時約 5 秒、站著時約 15 秒同步一次；切到別的分頁就暫停
+  setInterval(()=>{const gap=(Date.now()-lastMove<8000)?5000:15000;if(Date.now()-lastSync>=gap)sync()},1000);
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)sync()});
 }
 function setNotice(){
   const n=$("notice");let t="";
@@ -220,22 +298,24 @@ async function delSolution(id){await api("delete",{kind:"s",id,password:S.adminP
 async function delProblem(id){await api("delete",{kind:"p",id,password:S.adminPw});await load()}
 
 /* ---------- 地圖生成 ---------- */
-const W=64,H=44,T=16;
+const W=70,H=48,T=16;
 function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 const R=rng(20261026);
 function makeNoise(gs){const g=[];for(let i=0;i<(gs+1)*(gs+1);i++)g.push(R());return(x,y)=>{const fx=x*gs,fy=y*gs,ix=Math.floor(fx),iy=Math.floor(fy),tx=fx-ix,ty=fy-iy,sx=tx*tx*(3-2*tx),sy=ty*ty*(3-2*ty);const v=(a,b)=>g[Math.min(gs,Math.max(0,b))*(gs+1)+Math.min(gs,Math.max(0,a))];const a=v(ix,iy)+(v(ix+1,iy)-v(ix,iy))*sx,b=v(ix,iy+1)+(v(ix+1,iy+1)-v(ix,iy+1))*sx;return a+(b-a)*sy}}
 const n1=makeNoise(5),n2=makeNoise(11);
 const land=new Uint8Array(W*H),zone=new Int8Array(W*H).fill(-1),occ=new Uint8Array(W*H);
-const cx=W/2,cy=H/2+1,rx=W*0.37,ry=H*0.37;
+const cx=W/2,cy=H/2+1,rx=W*0.40,ry=H*0.39;
 for(let y=0;y<H;y++)for(let x=0;x<W;x++){
   const d=Math.hypot((x-cx)/rx,(y-cy)/ry);
-  const n=(n1(x/W,y/H)-0.5)*0.55+(n2(x/W,y/H)-0.5)*0.25;
-  if(d+n<0.95&&x>1&&y>1&&x<W-2&&y<H-2)land[y*W+x]=1;
+  const n=(n1(x/W,y/H)-0.5)*0.45+(n2(x/W,y/H)-0.5)*0.22;
+  if(d+n<0.95&&x>2&&y>2&&x<W-3&&y<H-3)land[y*W+x]=1;
 }
 const isLand=(x,y)=>x>=0&&y>=0&&x<W&&y<H&&land[y*W+x]===1;
 const isBeach=(x,y)=>isLand(x,y)&&(!isLand(x+1,y)||!isLand(x-1,y)||!isLand(x,y+1)||!isLand(x,y-1));
 function nearestLand(px,py){let best=null,bd=1e9;for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(isLand(x,y)&&!isBeach(x,y)){const d=(x-px)**2+(y-py)**2;if(d<bd){bd=d;best=[x,y]}}return best}
-const ZC={ren:nearestLand(cx-rx*0.5,cy-ry*0.32),wen:nearestLand(cx+rx*0.02,cy-ry*0.55),jing:nearestLand(cx+rx*0.55,cy-ry*0.12),chan:nearestLand(cx+rx*0.25,cy+ry*0.5),di:nearestLand(cx-rx*0.38,cy+ry*0.45)};
+// 8 區中心（相對於島的半徑）
+const ZREL={t1:[-0.58,-0.22],t6:[-0.18,-0.58],t4:[0.28,-0.55],t3:[0.66,-0.08],t2:[0.42,0.48],t8:[-0.02,0.5],t7:[-0.52,0.45],t5:[0.02,-0.04]};
+const ZC={};AKEYS.forEach(k=>{const r=ZREL[k];ZC[k]=nearestLand(cx+rx*r[0],cy+ry*r[1])});
 for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(isLand(x,y)){let bi=-1,bd=1e9;AKEYS.forEach((k,i)=>{const d=(x-ZC[k][0])**2+(y-ZC[k][1])**2;if(d<bd){bd=d;bi=i}});zone[y*W+x]=bi}
 // 旗位
 const SLOTS={};
@@ -244,174 +324,322 @@ AKEYS.forEach((k,i)=>{
   for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(zone[y*W+x]===i&&!isBeach(x,y)&&isLand(x,y-1)&&isLand(x,y+1))cand.push([x,y,Math.hypot(x-c[0],y-c[1])]);
   cand.sort((a,b)=>a[2]-b[2]);
   const ch=[];
-  for(const p of cand){if(p[2]<2.2)continue;if(ch.every(q=>Math.hypot(q[0]-p[0],q[1]-p[1])>=3.3))ch.push(p);if(ch.length>=16)break}
+  for(const p of cand){if(p[2]<2.4)continue;if(ch.every(q=>Math.hypot(q[0]-p[0],q[1]-p[1])>=3.1))ch.push(p);if(ch.length>=14)break}
   SLOTS[k]=ch.map(p=>[p[0],p[1]]);
   ch.forEach(([x,y])=>{for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<W&&yy<H)occ[yy*W+xx]=1}});
   for(let dy=-2;dy<=1;dy++)for(let dx=-2;dx<=2;dx++){const xx=c[0]+dx,yy=c[1]+dy;if(xx>=0&&yy>=0&&xx<W&&yy<H)occ[yy*W+xx]=1}
 });
 // 碼頭
-let dock=null;{let by=-1;for(let y=H-1;y>=0&&!dock;y--)for(let x=Math.floor(cx)-6;x<Math.floor(cx)+6;x++)if(isBeach(x,y)&&!isLand(x,y+1)){dock=[x,y];break}}
+let dock=null;for(let y=H-1;y>=0&&!dock;y--)for(let x=Math.floor(cx)-6;x<Math.floor(cx)+6;x++)if(isBeach(x,y)&&!isLand(x,y+1)){dock=[x,y];break}
 if(!dock)dock=nearestLand(cx,H-4);
 
-/* ---------- 預先畫好陸地圖層 ---------- */
-const landCv=document.createElement("canvas");landCv.width=W*T;landCv.height=H*T;
-(function drawLand(){
-  const g=landCv.getContext("2d");
-  const GROUND=["#8fbf5a","#9cc463","#6fa850","#a8c264","#b9bf7a"]; // ren wen di chan jing
+/* ---------- 3D 場景（Three.js，low-poly 粉彩風） ---------- */
+const GY=0.2; // 地面高度
+const host=$("map3d"),labelsEl=$("labels");
+let VW=1,VH=1,overview=false,selId=null,toastT=0;
+const smallScreen=Math.min(window.innerWidth,window.innerHeight)<600;
+let renderer=null;
+try{
+  renderer=new THREE.WebGLRenderer({antialias:true});
+  renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));
+  renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  renderer.domElement.style.cssText="display:block;width:100%;height:100%;touch-action:none;cursor:pointer";
+  host.appendChild(renderer.domElement);
+}catch(e){renderer=null;host.innerHTML='<div class="nogl">這台裝置的瀏覽器無法顯示 3D 畫面。<br>請按上方「問題清單」瀏覽問題並提出解方。</div>'}
+
+const scene=new THREE.Scene();
+const SKY=new THREE.Color("#d4eef0");scene.background=SKY;scene.fog=new THREE.Fog(SKY,60,150);
+const camera=new THREE.PerspectiveCamera(32,1,0.5,500);
+scene.add(new THREE.HemisphereLight(0xffffff,0xc9dfb6,0.66));
+const sun=new THREE.DirectionalLight(0xfff1d8,0.56);
+sun.castShadow=true;{const s=smallScreen?1024:2048;sun.shadow.mapSize.set(s,s)}
+Object.assign(sun.shadow.camera,{left:-44,right:44,top:36,bottom:-36,near:1,far:170});
+sun.shadow.bias=-0.0006;sun.shadow.normalBias=0.03;
+sun.position.set(W/2-26,52,H/2+28);sun.target.position.set(W/2,0,H/2);scene.add(sun,sun.target);
+
+// 共用幾何與材質
+const G={
+  box:new THREE.BoxGeometry(1,1,1).translate(0,.5,0),
+  cyl:new THREE.CylinderGeometry(.5,.5,1,7).translate(0,.5,0),
+  ico:new THREE.IcosahedronGeometry(.5,0),
+  roof:new THREE.ConeGeometry(.72,1,4).rotateY(Math.PI/4).translate(0,.5,0),
+  cone6:new THREE.ConeGeometry(1,1,6).translate(0,.5,0),
+  disc:new THREE.CylinderGeometry(.5,.5,1,14).translate(0,.5,0)
+};
+const MAT=new THREE.MeshStandardMaterial({color:0xffffff,flatShading:true,roughness:.95,metalness:0});
+const matCache={};
+const M=c=>matCache[c]||(matCache[c]=new THREE.MeshStandardMaterial({color:c,flatShading:true,roughness:.92,metalness:0}));
+const GLOW=new THREE.MeshBasicMaterial({color:0xffd86b});
+const tV=new THREE.Vector3(),tS=new THREE.Vector3(),tQ=new THREE.Quaternion(),tE=new THREE.Euler(),tM=new THREE.Matrix4(),tC=new THREE.Color();
+
+// 靜態物件用 InstancedMesh 批次畫
+const batches={};
+function put(geo,x,y,z,sx,sy,sz,color,ry,rx,rz,noShadow){
+  const k=geo+(noShadow?"_n":"_s");(batches[k]||(batches[k]={geo,noShadow,items:[]})).items.push([x,y,z,sx,sy,sz,color,rx||0,ry||0,rz||0]);
+}
+function flush(){
+  for(const k in batches){const b=batches[k];const mesh=new THREE.InstancedMesh(G[b.geo],MAT,b.items.length);
+    b.items.forEach((it,i)=>{tE.set(it[7],it[8],it[9]);tQ.setFromEuler(tE);tM.compose(tV.set(it[0],it[1],it[2]),tQ,tS.set(it[3],it[4],it[5]));mesh.setMatrixAt(i,tM);mesh.setColorAt(i,tC.set(it[6]))});
+    mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;
+    mesh.castShadow=!b.noShadow;mesh.receiveShadow=true;scene.add(mesh)}
+}
+
+/* 建島 */
+(function buildIsland(){
   const r=rng(77);
-  const px=(x,y,w,h,c)=>{g.fillStyle=c;g.fillRect(x,y,w,h)};
+  const water=new THREE.Mesh(new THREE.PlaneGeometry(500,500),new THREE.MeshStandardMaterial({color:0x8fcad8,roughness:.7}));
+  water.rotation.x=-Math.PI/2;water.position.set(W/2,-0.05,H/2);water.receiveShadow=true;scene.add(water);
+  const GROUND={t1:"#d3e8b4",t2:"#e2e4ab",t3:"#cfe8c6",t4:"#e4dcc1",t5:"#cbe6b8",t6:"#dae4b0",t7:"#bcdca9",t8:"#d8dccb"};
+  const shade=(hex,a)=>{tC.set(hex);tC.offsetHSL(0,0,a);return "#"+tC.getHexString()};
+  // 地塊、沙灘、淺灘
   for(let y=0;y<H;y++)for(let x=0;x<W;x++){
-    if(!isLand(x,y))continue;const X=x*T,Y=y*T;
-    if(isBeach(x,y)){px(X,Y,T,T,"#e8d39a");if(r()<.3)px(X+r()*12|0,Y+r()*12|0,2,2,"#d6bd7c");continue}
-    const zi=zone[y*W+x];px(X,Y,T,T,GROUND[zi]);
-    if(r()<.35)px(X+(r()*13|0),Y+(r()*13|0),2,2,"rgba(0,0,0,.08)");
-    if(r()<.25)px(X+(r()*13|0),Y+(r()*13|0),2,1,"rgba(255,255,255,.18)");
+    if(isLand(x,y)){
+      if(isBeach(x,y))put("box",x+.5,-.4,y+.5,1,.5,1,shade("#f0dcab",(r()-.5)*.02),0,0,0,true);
+      else{const k=AKEYS[zone[y*W+x]];put("box",x+.5,-.4,y+.5,1,.6,1,shade(GROUND[k],(r()-.5)*.025),0,0,0,true)}
+    }else if(isLand(x+1,y)||isLand(x-1,y)||isLand(x,y+1)||isLand(x,y-1)||isLand(x+1,y+1)||isLand(x-1,y-1)||isLand(x+1,y-1)||isLand(x-1,y+1)){
+      put("box",x+.5,-.06,y+.5,1,.03,1,"#ade0e6",0,0,0,true);
+    }
   }
-  // 浪花邊
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(!isLand(x,y)&&(isLand(x+1,y)||isLand(x-1,y)||isLand(x,y+1)||isLand(x,y-1)))px(x*T,y*T,T,T,"rgba(255,255,255,.22)");
-  // 產：田畦
-  const ci=AKEYS.indexOf("chan");
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++){if(zone[y*W+x]!==ci||isBeach(x,y)||occ[y*W+x])continue;
-    if((x+y)%7<4&&r()<.85){const X=x*T,Y=y*T;px(X,Y,T,T,"#7a5a33");for(let k=0;k<4;k++)px(X+1,Y+2+k*4,T-2,2,y%2?"#b5d65a":"#e3c34a")}}
-  // 地：樹與山
-  const tree=(X,Y)=>{px(X+6,Y+10,4,6,"#6b4a2b");px(X+2,Y+3,12,8,"#2f6e3a");px(X+4,Y,8,4,"#3d8a4a");px(X+4,Y+4,3,2,"#57a95f")};
-  const di=AKEYS.indexOf("di");
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++){if(occ[y*W+x]||isBeach(x,y))continue;const z=zone[y*W+x];
-    if(z===di&&r()<.42)tree(x*T,y*T);else if(z!==ci&&z>=0&&r()<.05)tree(x*T,y*T)}
-  // 人：民宅
-  const house=(X,Y,roof)=>{px(X+1,Y+7,14,9,"#efe2c8");px(X,Y+4,16,4,roof);px(X+2,Y+2,12,3,roof);px(X+6,Y+11,4,5,"#7a5a33");px(X+2,Y+9,3,3,"#6fa6c4");px(X+11,Y+9,3,3,"#6fa6c4")};
-  const ri=AKEYS.indexOf("ren");
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++){if(occ[y*W+x]||isBeach(x,y))continue;if(zone[y*W+x]===ri&&r()<.16)house(x*T,y*T,r()<.5?"#b8442f":"#8a3b2a")}
-  // 景：老街店屋
-  const ji=AKEYS.indexOf("jing");
-  for(let y=0;y<H;y++)for(let x=0;x<W;x++){if(occ[y*W+x]||isBeach(x,y))continue;if(zone[y*W+x]===ji&&r()<.13){const X=x*T,Y=y*T;px(X,Y+2,16,14,"#c98b62");px(X,Y,16,3,"#7d4a35");px(X+2,Y+5,5,4,"#f3e0a8");px(X+9,Y+5,5,4,"#f3e0a8");px(X+5,Y+11,6,5,"#4e3022")}}
+  // 道路：各區中心連到中央廣場，廣場連到碼頭
+  const roadOcc=new Uint8Array(W*H);
+  const road=(a,b)=>{const ax=a[0]+.5,az=a[1]+.5,bx=b[0]+.5,bz=b[1]+.5,dx=bx-ax,dz=bz-az,L=Math.hypot(dx,dz),ry=Math.atan2(dx,dz);
+    put("box",(ax+bx)/2,GY,(az+bz)/2,.95,.025,L,"#c9ced4",ry,0,0,true);
+    for(let s=.6;s<L-.6;s+=.9)put("box",ax+dx*s/L,GY+.026,az+dz*s/L,.07,.01,.36,"#ffffff",ry,0,0,true);
+    for(let s=0;s<=L;s+=.3){const tx=Math.floor(ax+dx*s/L),tz=Math.floor(az+dz*s/L);for(let oy=-1;oy<=1;oy++)for(let ox=-1;ox<=1;ox++){if(Math.abs(ox)+Math.abs(oy)<2)roadOcc[(tz+oy)*W+tx+ox]=1}}};
+  AKEYS.forEach(k=>{if(k!=="t5")road(ZC[k],ZC.t5)});
+  if(dock)road(ZC.t5,[dock[0],dock[1]-1]);
+
+  // 小元件
+  const tree=(x,z,s)=>{s=s||1;put("cyl",x,GY,z,.13*s,.6*s,.13*s,"#b39878");put("ico",x,GY+.9*s,z,.95*s,1.05*s,.95*s,r()<.5?"#a5d8a0":"#8dca94",r()*3,r()*3);
+    if(r()<.14)put("ico",x+.18*s,GY+1.25*s,z+.1*s,.42*s,.42*s,.42*s,"#f2ae8a",r()*3)};
+  const bush=(x,z)=>put("ico",x,GY+.18,z,.55,.42,.55,"#b2dca9",r()*3,r()*3);
+  const palm=(x,z)=>{const h=1.1+r()*.5;put("cyl",x,GY,z,.09,h,.09,"#c2a785");for(let i=0;i<6;i++){const a=i/6*Math.PI*2+r()*.4;put("box",x+Math.sin(a)*.28,GY+h-.02,z+Math.cos(a)*.28,.16,.035,.62,"#bfe2b2",a,-.42)}};
+  const grass=(x,z)=>{for(let i=0;i<3;i++)put("box",x+(r()-.5)*.3,GY,z+(r()-.5)*.3,.035,.16+r()*.14,.035,"#a3cf8f",0,(r()-.5)*.6,(r()-.5)*.6,true)};
+  const flowers=(x,z)=>{const c=["#f4a68f","#f5d46e","#cdb6ee","#ffffff"][r()*4|0];for(let i=0;i<3;i++){const fx=x+(r()-.5)*.45,fz=z+(r()-.5)*.45;put("box",fx,GY,fz,.03,.22,.03,"#93c483",0,0,0,true);put("box",fx,GY+.22,fz,.1,.06,.1,c,0,0,0,true)}};
+  const house=(x,z,roof,ry,s)=>{s=s||1;put("box",x,GY,z,.9*s,.62*s,.82*s,"#faf8f3",ry);put("roof",x,GY+.62*s,z,1.0*s,.48*s,.92*s,roof,ry)};
+  const ROOFS=["#f2b896","#a9cdea","#f3e2aa","#f2b896"];
+  const shop=(x,z,aw)=>{put("box",x,GY,z,.9,.72,.8,"#fbf8f1");put("box",x,GY+.72,z,.98,.07,.88,"#e3d9c6");put("box",x,GY+.46,z+.44,.9,.05,.2,aw,0,.38);put("box",x,GY,z+.41,.3,.42,.02,"#9db7c4")};
+  const stall=(x,z,c)=>{for(const[ox,oz]of[[-.3,-.25],[.3,-.25],[-.3,.25],[.3,.25]])put("box",x+ox,GY,z+oz,.05,.6,.05,"#b9a17f");put("box",x,GY+.6,z,.75,.06,.6,c);put("box",x,GY+.66,z,.55,.06,.4,"#ffffff");put("box",x,GY,z+.15,.6,.3,.25,"#d8b68a")};
+  const bench=(x,z,ry)=>{put("box",x,GY+.15,z,.7,.06,.22,"#c7a27b",ry);put("box",x,GY,z,.06,.15,.2,"#9b7a58",ry)};
+  const lot=(x,z)=>put("box",x,GY,z,.9,.02,.9,"#e3d2b2",0,0,0,true);
+  const sign=(x,z)=>{put("box",x,GY,z,.06,.7,.06,"#a88b6a");put("box",x,GY+.55,z,.55,.32,.05,"#ffffff");put("box",x,GY+.7,z+.03,.4,.05,.01,"#e0574a",0,0,0,true)};
+  const field=(x,z,y)=>{put("box",x,GY,z,1,.03,1,"#dcc59b",0,0,0,true);for(let i=0;i<3;i++)put("box",x,GY+.03,z-.32+i*.32,.9,.13,.15,y%2?"#bfe08c":"#efd77f",0,0,0,true)};
+  const plaza=(x,z,d)=>put("disc",x,GY,z,d,.02,d,"#f1eee4",0,0,0,true);
+
+  // 散布
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    if(!isLand(x,y))continue;const cx0=x+.5+(r()-.5)*.3,cz0=y+.5+(r()-.5)*.3;
+    if(isBeach(x,y)){if(r()<.06)palm(cx0,cz0);continue}
+    if(r()<.45)grass(x+r(),y+r());
+    if(r()<.07)flowers(x+.5,y+.5);
+    if(occ[y*W+x]||roadOcc[y*W+x])continue;
+    const k=AKEYS[zone[y*W+x]],v=r();
+    if(k==="t7"){if(v<.42)tree(cx0,cz0,.9+r()*.4);else if(v<.55)bush(cx0,cz0)}
+    else if(k==="t1"){if(v<.15)house(cx0,cz0,ROOFS[r()*4|0],(r()<.5?0:Math.PI/2));else if(v<.24)tree(cx0,cz0);else if(v<.3)bush(cx0,cz0)}
+    else if(k==="t2"){if((x+y)%7<4&&v<.8)field(x+.5,y+.5,y);else if(v<.9)tree(cx0,cz0,.8)}
+    else if(k==="t3"){if(v<.13)palm(cx0,cz0);else if(v<.18)stall(cx0,cz0,r()<.5?"#9fd0e6":"#f4b49a");else if(v<.24)bush(cx0,cz0)}
+    else if(k==="t4"){if(v<.17)shop(cx0,cz0,["#e0574a","#57a7c2","#f0c25a"][r()*3|0]);else if(v<.22)tree(cx0,cz0,.8)}
+    else if(k==="t5"){if(v<.08)plaza(x+.5,y+.5,1.6);else if(v<.17)tree(cx0,cz0);else if(v<.21)bench(cx0,cz0,r()*3)}
+    else if(k==="t6"){if(v<.06)house(cx0,cz0,"#e9a07f",0);else if(v<.2)tree(cx0,cz0);else if(v<.26)bush(cx0,cz0)}
+    else if(k==="t8"){if(v<.08)lot(x+.5,y+.5);else if(v<.13)sign(cx0,cz0);else if(v<.17)put("box",cx0,GY,cz0,.8,1.1+r()*.8,.8,"#e9eef2");else if(v<.22)bush(cx0,cz0)}
+  }
   // 地標
-  const [rx0,ry0]=ZC.ren;house(rx0*T-8,ry0*T-10,"#b8442f");house(rx0*T+8,ry0*T-6,"#8a3b2a");
-  const [wx,wy]=ZC.wen;{const X=wx*T-20,Y=wy*T-22;px(X,Y+16,40,14,"#e9d9b8");px(X-4,Y+10,48,7,"#c0392b");px(X,Y+5,40,6,"#c0392b");px(X+4,Y+1,32,5,"#d3542f");px(X-6,Y+8,4,4,"#f2c94c");px(X+42,Y+8,4,4,"#f2c94c");px(X+16,Y+21,8,9,"#7a3b22");px(X+6,Y+19,4,6,"#e64a3b");px(X+30,Y+19,4,6,"#e64a3b")}
-  const [dx0,dy0]=ZC.di;{const X=dx0*T-24,Y=dy0*T-24;for(let i=0;i<6;i++)px(X+i*4,Y+24-i*4,48-i*8,4,i>3?"#eef2ee":"#6a8f5a")}
-  const [cx0,cy0]=ZC.chan;{const X=cx0*T-14,Y=cy0*T-18;px(X,Y+10,28,18,"#a0522d");px(X-2,Y+6,32,5,"#5b3a26");px(X+10,Y+18,8,10,"#3f2a1c");px(X+22,Y,5,10,"#777")}
-  const [jx,jy]=ZC.jing;{const X=jx*T-6,Y=jy*T-36;px(X,Y+8,12,36,"#f4f1ea");for(let i=0;i<3;i++)px(X,Y+14+i*10,12,4,"#c0392b");px(X-2,Y+2,16,7,"#2b3a44");px(X+2,Y+3,8,5,"#f9e27a")}
+  const C=k=>[ZC[k][0]+.5,ZC[k][1]+.5];
+  {const[x,z]=C("t1");plaza(x,z,4.4);put("box",x,GY,z,3,1.1,1.3,"#fbf8f1");put("box",x,GY+1.1,z,3.2,.12,1.5,"#a9cdea");for(let i=0;i<5;i++)put("box",x-1.2+i*.6,GY+.5,z+.66,.32,.28,.02,"#a9d3e8",0,0,0,true);put("cyl",x+1.9,GY,z+.6,.05,2,.05,"#dddddd");put("box",x+2.2,GY+1.65,z+.6,.55,.34,.03,"#e0574a")}
+  {const[x,z]=C("t2");put("box",x,GY,z,2.2,1.2,1.6,"#f2d2bb");put("roof",x,GY+1.2,z,2.4,.6,1.8,"#d98e6c");put("cyl",x+.8,GY,z-.4,.35,2.4,.35,"#cfcfcf");put("box",x-.2,GY,z+.81,.5,.7,.02,"#9b7a58")}
+  {const[x,z]=C("t3");plaza(x,z,3.2);for(let i=0;i<5;i++)put("cyl",x,GY+i*.55,z,.7-i*.05,.55,.7-i*.05,i%2?"#e0574a":"#fbfbfb");put("box",x,GY+2.75,z,.6,.45,.6,"#fff3c4");put("cone6",x,GY+3.2,z,.45,.4,.45,"#e0574a")}
+  {const[x,z]=C("t4");put("box",x,GY,z,2.4,1.1,1.5,"#fbfaf6");put("box",x,GY+1.1,z,2.5,.1,1.6,"#7fc59a");put("box",x,GY+.7,z+.78,2.4,.07,.32,"#7fc59a",0,.35);put("box",x-.5,GY,z+.76,.9,.6,.02,"#a9d3e8",0,0,0,true)}
+  {const[x,z]=C("t5");plaza(x,z,5);for(const[ox,oz]of[[-.8,-.8],[.8,-.8],[-.8,.8],[.8,.8]])put("cyl",x+ox,GY,z+oz,.12,1.2,.12,"#c98f6a");put("roof",x,GY+1.2,z,2.4,.8,2.4,"#e9907a");put("box",x,GY,z,1,.35,.5,"#c7a27b")}
+  {const[x,z]=C("t6");plaza(x,z,4.4);put("box",x,GY,z,2.6,.9,1.6,"#fbf3e6");put("box",x,GY+.9,z,3.1,.14,2,"#e0574a");put("box",x,GY+1.04,z,2.6,.35,1.5,"#e57a62");put("box",x,GY+1.39,z,2.9,.1,.6,"#e0574a");put("box",x,GY,z+.81,.6,.6,.02,"#b0543c");for(const ox of[-1.6,1.6])put("box",x+ox,GY+.55,z+.9,.18,.25,.18,"#f5d46e")}
+  {const[x,z]=C("t7");put("cone6",x,GY,z,2.6,2.8,2.6,"#9bcf98");put("cone6",x,GY+2.1,z,.95,.7,.95,"#ffffff");put("cone6",x+2,GY,z+.8,1.6,1.7,1.6,"#b0dba6")}
+  {const[x,z]=C("t8");plaza(x,z,4);put("box",x,GY,z,1.6,3,1.6,"#dfe8ee");for(let ry=0;ry<5;ry++)for(let cx2=0;cx2<3;cx2++)put("box",x-.5+cx2*.5,GY+.4+ry*.5,z+.81,.3,.25,.02,"#a9d3e8",0,0,0,true);put("box",x,GY+3,z,1.7,.12,1.7,"#c7d3dc");put("cyl",x+1.5,GY,z+.5,.05,1.8,.05,"#aaaaaa");put("box",x+1.5,GY+1.5,z+.5,.9,.6,.05,"#ffffff")}
   // 碼頭
-  if(dock){px(dock[0]*T+3,dock[1]*T+6,10,T*2+4,"#8b5e34");for(let i=0;i<5;i++)px(dock[0]*T+3,dock[1]*T+8+i*7,10,1,"#5e3d20")}
+  if(dock){for(let i=0;i<4;i++)put("box",dock[0]+.5,GY-.15,dock[1]+.5+i,.8,.1,.95,"#c9a37a");for(let i=0;i<4;i++)for(const ox of[-.38,.38])put("cyl",dock[0]+.5+ox,-.4,dock[1]+1+i,.1,.55,.1,"#9b7a58")}
+  flush();
 })();
 
-/* ---------- 畫面 ---------- */
-const cv=$("map"),ctx=cv.getContext("2d");
-let dpr=1,VW=0,VH=0,zoom=2,overview=false;
-const cam={x:0,y:0};
-const spawn=nearestLand(dock?dock[0]:cx,dock?dock[1]-1:cy);
-const av={x:spawn[0]*T+8,y:spawn[1]*T+10,tx:null,ty:null,dir:1,walk:0,goal:null};
-function resize(){const r=cv.getBoundingClientRect();dpr=Math.min(2,window.devicePixelRatio||1);VW=r.width;VH=r.height;cv.width=Math.round(VW*dpr);cv.height=Math.round(VH*dpr);if(!zoomSet)zoom=VW<520?1.5:2.2}
-let zoomSet=false;
-new ResizeObserver(resize).observe(cv);resize();
-function fitZoom(){return Math.min(VW/(W*T),VH/(H*T))}
-function curZoom(){return overview?fitZoom():zoom}
-
-// 問題 → 位置
-let placed=[];
+/* 旗子（問題） */
+const flagGroup=new THREE.Group();scene.add(flagGroup);
+let placed=[],cloths=[];
+const SELMAT=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.75});
+const selRing=new THREE.Mesh(G.disc,SELMAT);selRing.scale.set(1.8,.02,1.8);selRing.visible=false;scene.add(selRing);
+function mk(geo,c,x,y,z,sx,sy,sz,parent,mat){const m=new THREE.Mesh(G[geo],mat||M(c));m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m}
+function addFlag(parent,x,z,h,color){mk("cyl","#f4f4f4",x,0,z,.06,h,.06,parent);const pivot=new THREE.Group();pivot.position.set(x,h-.42,z);parent.add(pivot);mk("box",color,.3,0,0,.58,.36,.03,pivot);cloths.push(pivot);return pivot}
+function hash(s){let h=2166136261;for(const c of String(s))h=Math.imul(h^c.charCodeAt(0),16777619);return h}
 function placeProblems(){
   const used={};AKEYS.forEach(k=>used[k]=0);
-  placed=S.problems.map(p=>{const k=AREAS[p.area]?p.area:"ren";const sl=SLOTS[k];let pos;
-    if(used[k]<sl.length)pos=sl[used[k]];else{const r=rng(hash(p.id));const c=ZC[k];pos=[c[0]+Math.round((r()-.5)*10),c[1]+Math.round((r()-.5)*8)];if(!isLand(pos[0],pos[1]))pos=c}
-    used[k]++;return{p,x:pos[0]*T+8,y:pos[1]*T+14,n:solsFor(p.id).length}});
+  placed=S.problems.slice().sort((a,b)=>(+a.no||999)-(+b.no||999)||(a.at||0)-(b.at||0)).map(p=>{
+    const k=AREAS[p.area]?p.area:"t1";const sl=SLOTS[k];let pos;
+    if(used[k]<sl.length)pos=sl[used[k]];else{const rr=rng(hash(p.id));const c=ZC[k];pos=[c[0]+Math.round((rr()-.5)*10),c[1]+Math.round((rr()-.5)*8)];if(!isLand(pos[0],pos[1]))pos=c}
+    used[k]++;return{p,x:pos[0]*T+8,y:pos[1]*T+14,wx:pos[0]+.5,wz:pos[1]+.5,n:solsFor(p.id).length}});
+  buildFlags();
 }
-function hash(s){let h=2166136261;for(const c of String(s))h=Math.imul(h^c.charCodeAt(0),16777619);return h}
+function buildFlags(){
+  while(flagGroup.children.length)flagGroup.remove(flagGroup.children[0]);
+  cloths=[];
+  const rr=rng(9);
+  placed.forEach(it=>{
+    const g=new THREE.Group();g.position.set(it.wx,GY,it.wz);flagGroup.add(g);
+    const col=(AREAS[it.p.area]||AREAS.t1).color,n=it.n;
+    if(n===0){mk("disc","#f6cdc4",0,0,0,.9,.03,.9,g);addFlag(g,0,0,1.55,"#e0574a")}
+    else if(n<3){for(const[ox,oz]of[[-.38,-.32],[.38,-.32],[-.38,.32],[.38,.32]])mk("box","#d9b48a",ox,0,oz,.06,1,.06,g);
+      mk("box","#d9b48a",0,.5,.32,.82,.05,.05,g);mk("box","#d9b48a",0,.95,.32,.82,.05,.05,g);mk("box","#faf8f3",0,0,0,.7,.38,.58,g);
+      addFlag(g,.38,-.32,1.6,col)}
+    else{mk("box","#faf8f3",0,0,0,.95,.7,.82,g);mk("roof",col,0,.7,0,1.05,.5,.95,g);
+      for(const ox of[-.22,.22])mk("box","",ox,.32,.42,.2,.18,.02,g,GLOW);mk("box","#b8977a",0,0,.42,.18,.32,.02,g);addFlag(g,.55,-.3,1.7,col)}
+    for(let i=0;i<Math.min(n,6);i++){const a=i*1.05+.4,sx=Math.cos(a)*.95,sz=Math.sin(a)*.6+.15;mk("cyl","#b39878",sx,0,sz,.06,.22,.06,g);mk("ico","#8dca94",sx,.36,sz,.36,.36,.36,g)}
+  });
+  buildBadges();
+}
 
-function drawFlag(g,x,y,col,t,big){const w=Math.sin(t*4+x)*1.5;g.fillStyle="#4b3621";g.fillRect(x-1,y-24,2,24);
-  for(let i=0;i<4;i++){g.fillStyle=col;g.fillRect(x+1+i*3,y-24+Math.round(w*(i/3)),3,big?10:8)}}
-function drawSprite(item,t,sel){
-  const {x,y,n,p}=item,col=(AREAS[p.area]||AREAS.ren).color;
-  if(sel){ctx.fillStyle="rgba(255,255,255,.55)";ctx.beginPath();ctx.ellipse(x,y,14,6,0,0,Math.PI*2);ctx.fill()}
-  if(n===0){
-    const b=1+Math.sin(t*3+x)*.5;ctx.fillStyle="rgba(192,57,43,.25)";ctx.beginPath();ctx.ellipse(x,y,9*b,4*b,0,0,Math.PI*2);ctx.fill();
-    drawFlag(ctx,x,y,"#c0392b",t,true);ctx.fillStyle=col;ctx.fillRect(x-4,y-2,8,3);
-  }else if(n<3){
-    ctx.fillStyle="#c99a45";for(const dx of[-9,8])ctx.fillRect(x+dx,y-16,2,16);ctx.fillRect(x-9,y-16,19,2);ctx.fillRect(x-9,y-8,19,2);
-    ctx.fillStyle="#efe2c8";ctx.fillRect(x-6,y-6,12,6);drawFlag(ctx,x+9,y-14,col,t,false);
-  }else{
-    ctx.fillStyle="#efe2c8";ctx.fillRect(x-9,y-12,18,12);ctx.fillStyle=col;ctx.fillRect(x-11,y-16,22,5);ctx.fillRect(x-8,y-19,16,4);
-    const glow=.7+Math.sin(t*2+x)*.3;ctx.fillStyle=`rgba(255,214,90,${glow})`;ctx.fillRect(x-6,y-9,4,4);ctx.fillRect(x+2,y-9,4,4);
-    ctx.fillStyle="#7a5a33";ctx.fillRect(x-2,y-5,4,5);drawFlag(ctx,x+10,y-18,col,t,false);
+/* 人物 */
+const avG=new THREE.Group();scene.add(avG);
+let spawn=nearestLand(ZC.t5[0],ZC.t5[1]+4);
+for(let i=0;i<20;i++){const sx=spawn[0]+Math.round((Math.random()-.5)*6),sy=spawn[1]+Math.round((Math.random()-.5)*4);if(isLand(sx,sy)&&!isBeach(sx,sy)){spawn=[sx,sy];break}}
+const av={x:spawn[0]*T+8,y:spawn[1]*T+10,tx:null,ty:null,dir:0,walk:0,goal:null};
+function buildPerson(g,shirt,hair,pants){
+  const L=mk("box",pants,-.09,0,0,.15,.34,.17,g),R=mk("box",pants,.09,0,0,.15,.34,.17,g);
+  mk("box",shirt,0,.34,0,.44,.38,.27,g);mk("box","#f0c8a4",-.28,.38,0,.1,.32,.13,g);mk("box","#f0c8a4",.28,.38,0,.1,.32,.13,g);
+  mk("box","#f0c8a4",0,.72,0,.34,.32,.32,g);mk("box",hair,0,.98,0,.37,.1,.37,g);mk("box",hair,0,.74,-.15,.36,.26,.08,g);
+  mk("box","#2b2b2b",-.08,.84,.165,.05,.05,.01,g);mk("box","#2b2b2b",.08,.84,.165,.05,.05,.01,g);
+  return[L,R];
+}
+const[legL,legR]=buildPerson(avG,"#5aa9b5","#5b3e2c","#3d4f6e");
+// 其他線上同學
+const others=new Map();
+const SHIRTS=["#f2a07b","#a68ad8","#7cc58f","#f0c45a","#e78aa8","#7fb2e5","#c9a27e"],HAIRS=["#2b2018","#5b3e2c","#8a5a3a","#1f1f2b"];
+function setPlayers(list){
+  const seen=new Set();
+  list.forEach(p=>{if(!p||!p.k)return;seen.add(p.k);let o=others.get(p.k);
+    if(!o){const g=new THREE.Group();const h=hash(p.k)>>>0;const legs=buildPerson(g,SHIRTS[h%SHIRTS.length],HAIRS[(h>>4)%HAIRS.length],"#4a5568");scene.add(g);
+      const el=document.createElement("div");el.className="other";labelsEl.appendChild(el);
+      o={g,legs,el,x:p.x,y:p.y,dir:p.d||0,walk:0};others.set(p.k,o)}
+    o.el.textContent=p.name||"同學";o.tx=p.x;o.ty=p.y;o.td=p.d||0});
+  for(const[k,o]of others)if(!seen.has(k)){scene.remove(o.g);o.el.remove();others.delete(k)}
+  $("sOnline").textContent=others.size+1;
+}
+function stepOthers(dt,t){
+  for(const o of others.values()){
+    const dx=o.tx-o.x,dy=o.ty-o.y,d=Math.hypot(dx,dy);
+    if(d>400){o.x=o.tx;o.y=o.ty;o.walk=0}
+    else if(d>1.5){const st=Math.min(d,Math.max(60,d*.9)*dt);o.x+=dx/d*st;o.y+=dy/d*st;o.dir=Math.atan2(dx,dy);o.walk=.15}
+    else{o.walk=Math.max(0,o.walk-dt);if(o.walk===0)o.dir=o.td}
+    o.g.position.set(o.x/T,GY+(o.walk>0?Math.abs(Math.sin(t*12))*.06:0),o.y/T);o.g.rotation.y=o.dir;
+    const sw=o.walk>0?Math.sin(t*12)*.06:0;o.legs[0].position.z=sw;o.legs[1].position.z=-sw;
   }
-  // 解方小樹
-  const sprouts=Math.min(n,6);for(let i=0;i<sprouts;i++){const a=i*1.05+0.5,sx=x+Math.cos(a)*15,sy=y+Math.sin(a)*6+2;ctx.fillStyle="#2f6e3a";ctx.fillRect(sx-2,sy-5,5,4);ctx.fillStyle="#6b4a2b";ctx.fillRect(sx,sy-1,1,2)}
-  // 計數
-  ctx.fillStyle=n?"#17232b":"#c0392b";ctx.fillRect(x-7,y+4,14,9);ctx.fillStyle="#fff";ctx.font="bold 8px monospace";ctx.textAlign="center";ctx.fillText(n,x,y+11);
 }
-function drawAvatar(t){const x=Math.round(av.x),y=Math.round(av.y),st=av.walk>0?Math.floor(t*10)%2:0;
-  ctx.fillStyle="rgba(0,0,0,.25)";ctx.beginPath();ctx.ellipse(x,y,6,2.5,0,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle="#2b3a44";ctx.fillRect(x-3,y-5,2,5-st);ctx.fillRect(x+1,y-5,2,4+st);
-  ctx.fillStyle="#e0743a";ctx.fillRect(x-4,y-11,8,7);
-  ctx.fillStyle="#f2c9a0";ctx.fillRect(x-3,y-17,6,6);
-  ctx.fillStyle="#2b2018";ctx.fillRect(x-4,y-19,8,3);ctx.fillRect(av.dir>0?x-4:x+2,y-17,2,3);
-  ctx.fillStyle="#2b2018";ctx.fillRect(av.dir>0?x+1:x-2,y-15,1,1);
-  ctx.fillStyle="#f4cf55";ctx.fillRect(x-5,y-21,10,2);
+
+/* 標籤（HTML 疊在畫面上） */
+const zoneEls={};
+AKEYS.forEach(k=>{const d=document.createElement("div");d.className="zl";d.innerHTML=`<i style="background:${AREAS[k].color}"></i><span class="no">${AREAS[k].ch}</span><span class="nm">${esc(AREAS[k].full)}</span>`;labelsEl.appendChild(d);zoneEls[k]=d});
+const meEl=document.createElement("div");meEl.className="me";meEl.textContent="我";meEl.title="你";labelsEl.appendChild(meEl);
+const hintEl=document.createElement("div");hintEl.className="hint";hintEl.hidden=true;labelsEl.appendChild(hintEl);
+let badgeEls=[];
+function buildBadges(){
+  badgeEls.forEach(b=>b.el.remove());badgeEls=[];
+  placed.forEach(it=>{const b=document.createElement("button");b.type="button";b.className="fb"+(it.n?"":" open");b.style.setProperty("--c",(AREAS[it.p.area]||AREAS.t1).color);
+    b.textContent=(it.p.no?it.p.no+" ":"")+(it.n===0?"🚩":it.n<3?"🔨"+it.n:"🏠"+it.n);b.setAttribute("aria-label",`問題 ${it.p.no||""}：${it.p.title}`);
+    b.addEventListener("click",e=>{e.stopPropagation();goToFlag(it)});labelsEl.appendChild(b);badgeEls.push({el:b,it})});
 }
-let selId=null,toastT=0;
-function frame(ts){
-  const t=ts/1000,z=curZoom(),dt=Math.min(.05,(t-(frame.l||t)));frame.l=t;
-  stepAvatar(dt);
-  // 鏡頭
-  const vw=VW/z,vh=VH/z;
-  if(overview){cam.x=(W*T-vw)/2;cam.y=(H*T-vh)/2}
-  else{const tx=Math.min(Math.max(av.x-vw/2,Math.min(0,(W*T-vw)/2)),Math.max(W*T-vw,(W*T-vw)/2)),ty=Math.min(Math.max(av.y-vh/2,Math.min(0,(H*T-vh)/2)),Math.max(H*T-vh,(H*T-vh)/2));cam.x+=(tx-cam.x)*Math.min(1,dt*6);cam.y+=(ty-cam.y)*Math.min(1,dt*6)}
-  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.imageSmoothingEnabled=false;
-  ctx.fillStyle="#2b6f86";ctx.fillRect(0,0,VW,VH);
-  ctx.setTransform(dpr*z,0,0,dpr*z,-cam.x*dpr*z,-cam.y*dpr*z);
-  // 海浪
-  const x0=Math.max(-2,Math.floor(cam.x/T)-1),y0=Math.max(-2,Math.floor(cam.y/T)-1),x1=Math.ceil((cam.x+vw)/T)+1,y1=Math.ceil((cam.y+vh)/T)+1;
-  for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++){if(isLand(x,y))continue;const v=Math.sin(t*1.6+x*.9+y*1.7)+Math.sin(t*1.1-x*.5+y*.3);
-    if(v>1.2){ctx.fillStyle="rgba(255,255,255,.28)";ctx.fillRect(x*T+3+Math.round(Math.sin(t+y)*2),y*T+7,6,1)}else if(v<-1.3){ctx.fillStyle="rgba(10,40,60,.18)";ctx.fillRect(x*T,y*T,T,T)}}
-  ctx.drawImage(landCv,0,0);
-  // 精靈依 y 排序
-  const items=placed.map(it=>({y:it.y,draw:()=>drawSprite(it,t,it.p.id===selId)}));items.push({y:av.y,draw:()=>drawAvatar(t)});
-  items.sort((a,b)=>a.y-b.y).forEach(i=>i.draw());
-  // 區名
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-  ctx.font="15px DotGothic16, monospace";ctx.textAlign="center";
-  AKEYS.forEach(k=>{const [x,y]=ZC[k];const sx=(x*T+8-cam.x)*z,sy=(y*T-30-cam.y)*z;if(sx<-60||sx>VW+60||sy<-20||sy>VH+20)return;
-    const label=AREAS[k].name,w=ctx.measureText(label).width+14;ctx.fillStyle="rgba(23,35,43,.82)";ctx.fillRect(sx-w/2,sy-13,w,20);ctx.fillStyle=AREAS[k].color;ctx.fillRect(sx-w/2,sy+5,w,2);ctx.fillStyle="#fff";ctx.fillText(label,sx,sy+2)});
-  // 靠近提示
+const LH={t1:1.9,t2:2.4,t3:4,t4:1.8,t5:2.4,t6:2.2,t7:3.3,t8:3.6};
+function proj(x,y,z){tV.set(x,y,z).project(camera);return{x:(tV.x+1)/2*VW,y:(1-tV.y)/2*VH,ok:tV.z<1&&tV.x>-1.2&&tV.x<1.2&&tV.y>-1.2&&tV.y<1.2}}
+function place(el,p,dy){if(!p.ok){el.style.display="none";return}el.style.display="";el.style.transform=`translate(${p.x.toFixed(1)}px,${(p.y-(dy||0)).toFixed(1)}px) translate(-50%,-100%)`}
+function updateLabels(){
+  const far=overview||curD>46,compact=overview&&VW<640;
+  AKEYS.forEach(k=>{const el=zoneEls[k];el.classList.toggle("compact",compact);place(el,proj(ZC[k][0]+.5,GY+LH[k],ZC[k][1]+.5),6)});
+  badgeEls.forEach(({el,it})=>{if(far){el.style.display="none";return}el.classList.toggle("sel",it.p.id===selId);const h=it.n>=3?1.9:it.n>0?1.8:1.75;place(el,proj(it.wx,GY+h,it.wz),2)});
+  place(meEl,proj(av.x/T,GY+1.45,av.y/T),6);
+  for(const o of others.values()){if(overview&&VW<640){o.el.style.display="none";continue}place(o.el,proj(o.x/T,GY+1.45,o.y/T),6)}
   const near=nearest(28);
-  if(near&&$("panel").hidden&&!overview){const sx=(near.x-cam.x)*z,sy=(near.y-40-cam.y)*z;const s="點旗子或按 E 查看";ctx.font="13px 'Noto Sans TC',sans-serif";const w=ctx.measureText(s).width+12;ctx.fillStyle="#fbfcfb";ctx.fillRect(sx-w/2,sy-28,w,20);ctx.strokeStyle="#17232b";ctx.lineWidth=2;ctx.strokeRect(sx-w/2,sy-28,w,20);ctx.fillStyle="#17232b";ctx.fillText(s,sx,sy-13)}
-  requestAnimationFrame(frame);
+  if(near&&$("panel").hidden&&!overview){hintEl.hidden=false;hintEl.textContent="點旗子或按 E 查看";place(hintEl,proj(near.wx,GY+2.3,near.wz),18)}else hintEl.hidden=true;
 }
+
+/* 鏡頭 */
+let yaw=0,D=smallScreen?32:30,curD=D;const PITCH=0.88;const camT=new THREE.Vector3(av.x/T,0,av.y/T);
+function overviewDist(){const t=Math.tan(camera.fov*Math.PI/360);return Math.max(W*1.04/(2*t*camera.aspect),H*1.45/(2*t))}
+function updateCamera(dt){
+  const tx=overview?W/2:av.x/T,tz=overview?H/2+2:av.y/T,d=overview?overviewDist():D,k=Math.min(1,dt*4);
+  camT.x+=(tx-camT.x)*k;camT.z+=(tz-camT.z)*k;curD+=(d-curD)*k;
+  camera.position.set(camT.x+Math.sin(yaw)*Math.cos(PITCH)*curD,Math.sin(PITCH)*curD,camT.z+Math.cos(yaw)*Math.cos(PITCH)*curD);
+  camera.lookAt(camT.x,0,camT.z);scene.fog.near=curD*1.4;scene.fog.far=curD*3.4;
+}
+function resize(){const r=host.getBoundingClientRect();VW=Math.max(1,r.width);VH=Math.max(1,r.height);if(renderer)renderer.setSize(VW,VH,false);camera.aspect=VW/VH;camera.updateProjectionMatrix()}
+new ResizeObserver(resize).observe(host);resize();
+
+/* 移動 */
 function nearest(r){let b=null,bd=r;placed.forEach(it=>{const d=Math.hypot(it.x-av.x,it.y-av.y);if(d<bd){bd=d;b=it}});return b}
 const keys={};
 function stepAvatar(dt){
-  let vx=0,vy=0;const sp=90;
-  if(keys.ArrowLeft||keys.a)vx-=1;if(keys.ArrowRight||keys.d)vx+=1;if(keys.ArrowUp||keys.w)vy-=1;if(keys.ArrowDown||keys.s)vy+=1;
-  if(vx||vy){av.tx=null;av.goal=null;overview=false}
+  let ix=0,iy=0,vx=0,vy=0;const sp=72;
+  if(keys.ArrowLeft||keys.a)ix-=1;if(keys.ArrowRight||keys.d)ix+=1;if(keys.ArrowUp||keys.w)iy-=1;if(keys.ArrowDown||keys.s)iy+=1;
+  if(ix||iy){av.tx=null;av.goal=null;overview=false;vx=ix*Math.cos(yaw)+iy*Math.sin(yaw);vy=-ix*Math.sin(yaw)+iy*Math.cos(yaw)}
   else if(av.tx!=null){const dx=av.tx-av.x,dy=av.ty-av.y,d=Math.hypot(dx,dy);if(d<2){av.tx=null;if(av.goal){openProblem(av.goal);av.goal=null}}else{vx=dx/d;vy=dy/d}}
   const m=Math.hypot(vx,vy);
   if(m){vx/=m;vy/=m;const nx=av.x+vx*sp*dt,ny=av.y+vy*sp*dt;
-    const ok=(x,y)=>isLand(Math.floor(x/T),Math.floor((y-2)/T));
+    const ok=(x,y)=>isLand(Math.floor(x/T),Math.floor(y/T));
     if(ok(nx,ny)){av.x=nx;av.y=ny}else if(ok(nx,av.y))av.x=nx;else if(ok(av.x,ny))av.y=ny;else{av.tx=null;if(av.goal){openProblem(av.goal);av.goal=null}}
-    if(vx)av.dir=vx>0?1:-1;av.walk=.15}else av.walk=Math.max(0,av.walk-dt);
+    av.dir=Math.atan2(vx,vy);av.walk=.15;lastMove=Date.now()}else av.walk=Math.max(0,av.walk-dt);
 }
-cv.addEventListener("pointerdown",e=>{
-  const r=cv.getBoundingClientRect(),z=curZoom(),wx=(e.clientX-r.left)/z+cam.x,wy=(e.clientY-r.top)/z+cam.y;
-  let hit=null,bd=18;placed.forEach(it=>{const d=Math.hypot(it.x-wx,it.y-10-wy);if(d<bd){bd=d;hit=it}});
-  if(overview){overview=false;if(hit){av.x=hit.x;av.y=hit.y+10;openProblem(hit.p.id);return}}
-  if(hit){if(Math.hypot(hit.x-av.x,hit.y-av.y)<40){openProblem(hit.p.id)}else{av.tx=hit.x;av.ty=hit.y+8;av.goal=hit.p.id}return}
-  av.tx=wx;av.ty=wy;av.goal=null;
-});
+function goToFlag(it){
+  if(overview){overview=false;av.x=it.x;av.y=it.y+10;openProblem(it.p.id);return}
+  if(Math.hypot(it.x-av.x,it.y-av.y)<40)openProblem(it.p.id);else{av.tx=it.x;av.ty=it.y+8;av.goal=it.p.id}
+}
+const ray=new THREE.Raycaster(),gPlane=new THREE.Plane(new THREE.Vector3(0,1,0),-GY),ndc=new THREE.Vector2(),hitP=new THREE.Vector3();
+function clickAt(cx2,cy2){
+  const r=host.getBoundingClientRect(),sx=cx2-r.left,sy=cy2-r.top;
+  let hit=null,bd=30;placed.forEach(it=>{const p=proj(it.wx,GY+.8,it.wz);if(!p.ok)return;const d=Math.hypot(p.x-sx,p.y-sy);if(d<bd){bd=d;hit=it}});
+  if(hit){goToFlag(hit);return}
+  if(overview){overview=false}
+  ndc.set(sx/VW*2-1,-(sy/VH)*2+1);ray.setFromCamera(ndc,camera);
+  if(ray.ray.intersectPlane(gPlane,hitP)){av.tx=hitP.x*T;av.ty=hitP.z*T;av.goal=null}
+}
+// 指標：點一下＝走過去；拖曳＝旋轉視角；兩指＝縮放
+const ptrs=new Map();let drag=null,pinch=0;
+if(renderer){const el=renderer.domElement;
+  el.addEventListener("pointerdown",e=>{try{el.setPointerCapture(e.pointerId)}catch(_){}ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(ptrs.size===1)drag={x:e.clientX,y:e.clientY,yaw,moved:false};else if(ptrs.size===2){const[a,b]=[...ptrs.values()];pinch=Math.hypot(a.x-b.x,a.y-b.y);if(drag)drag.moved=true}});
+  el.addEventListener("pointermove",e=>{if(!ptrs.has(e.pointerId))return;ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(ptrs.size===2){const[a,b]=[...ptrs.values()];const nd=Math.hypot(a.x-b.x,a.y-b.y);if(pinch>0){D=Math.min(70,Math.max(10,D*pinch/nd));overview=false}pinch=nd}
+    else if(drag){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(!drag.moved&&Math.hypot(dx,dy)>7)drag.moved=true;if(drag.moved)yaw=drag.yaw-dx*0.008}});
+  const up=e=>{const wasClick=drag&&!drag.moved&&ptrs.size===1;ptrs.delete(e.pointerId);if(wasClick&&e.type==="pointerup")clickAt(e.clientX,e.clientY);if(!ptrs.size){drag=null;pinch=0}};
+  el.addEventListener("pointerup",up);el.addEventListener("pointercancel",up);
+  el.addEventListener("wheel",e=>{e.preventDefault();overview=false;D=Math.min(70,Math.max(10,D*(1+e.deltaY*0.001)))},{passive:false});
+}
 window.addEventListener("keydown",e=>{if(e.target.closest&&e.target.closest("input,textarea,select"))return;
   const k=e.key.length===1?e.key.toLowerCase():e.key;
   if(["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","w","a","s","d"].includes(k)){keys[k]=true;e.preventDefault()}
+  if(k==="q")yaw+=.3;if(k==="r")yaw-=.3;
   if(k==="e"){const n=nearest(34);if(n)openProblem(n.p.id)}
   if(k==="Escape")closePanel();
 });
 window.addEventListener("keyup",e=>{const k=e.key.length===1?e.key.toLowerCase():e.key;keys[k]=false});
-$("zIn").onclick=()=>{overview=false;zoomSet=true;zoom=Math.min(4,zoom*1.25)};
-$("zOut").onclick=()=>{overview=false;zoomSet=true;zoom=Math.max(fitZoom(),zoom/1.25)};
+window.addEventListener("blur",()=>{for(const k in keys)keys[k]=false});
+$("zIn").onclick=()=>{overview=false;D=Math.max(10,D/1.25)};
+$("zOut").onclick=()=>{overview=false;D=Math.min(70,D*1.25)};
 $("zAll").onclick=()=>{overview=!overview};
+$("zRot").onclick=()=>{yaw=0};
+
+/* 動畫 */
+let lastT=0;
+function frame(ts){
+  const t=ts/1000,dt=Math.min(.05,t-(lastT||t));lastT=t;
+  stepAvatar(dt);stepOthers(dt,t);
+  avG.position.set(av.x/T,GY+(av.walk>0?Math.abs(Math.sin(t*12))*.06:0),av.y/T);avG.rotation.y=av.dir;
+  const sw=av.walk>0?Math.sin(t*12)*.06:0;legL.position.z=sw;legR.position.z=-sw;
+  cloths.forEach((c,i)=>{c.rotation.y=Math.sin(t*3+i*1.7)*.28});
+  const sel=placed.find(it=>it.p.id===selId);
+  if(sel){selRing.visible=true;selRing.position.set(sel.wx,GY+.01,sel.wz);const s=1.7+Math.sin(t*4)*.15;selRing.scale.set(s,.02,s)}else selRing.visible=false;
+  updateCamera(dt);
+  if(renderer)renderer.render(scene,camera);
+  updateLabels();
+  requestAnimationFrame(frame);
+}
 
 /* ---------- 面板 ---------- */
 const panel=$("panel"),pHead=$("pHead"),pBody=$("pBody");
 let panelView=null;
-function openPanel(view){panelView=view;panel.hidden=false;renderPanel()}
-function closePanel(){panel.hidden=true;panelView=null;selId=null}
+function openPanel(view){if(!S.nick&&view.type!=="nick"&&view.type!=="admin")view={type:"nick"};panelView=view;$("pClose").hidden=false;panel.hidden=false;renderPanel()}
+function closePanel(){if(panelView&&panelView.type==="nick"&&!S.nick)return;panel.hidden=true;panelView=null;selId=null}
 $("pClose").onclick=closePanel;
 function openProblem(id){selId=id;openPanel({type:"problem",id})}
 function toast(m){const t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2800)}
@@ -422,10 +650,10 @@ async function renderPanel(){
   if(!panelView||panel.hidden)return;const v=panelView;
   if(v.type==="problem"){
     const p=S.problems.find(x=>x.id===v.id);if(!p){closePanel();return}
-    const a=AREAS[p.area]||AREAS.ren;const sols=solsFor(p.id).map(s=>({...s,v:voteCount(s.id)})).sort((x,y)=>y.v-x.v||x.at-y.at);
+    const a=AREAS[p.area]||AREAS.t1;const sols=solsFor(p.id).map(s=>({...s,v:voteCount(s.id)})).sort((x,y)=>y.v-x.v||x.at-y.at);
     const ps=await names(sols.map(s=>s.by).concat(p.by||[]));
     const nm=id=>id===myId()?"你":((ps[id]&&ps[id].name)||"同學");
-    pHead.innerHTML=`<span class="area" style="--c:${a.css}">${a.ch}｜${a.full}</span><span class="place">${esc(p.place||"")}</span><h2>${esc(p.title)}</h2>`;
+    pHead.innerHTML=`<span class="area" style="--c:${a.css}">${a.name}</span><span class="place">${esc(a.q)}${p.no?"・#"+esc(p.no):""}${p.place?"・"+esc(p.place):""}</span><h2>${esc(p.title)}</h2>`;
     const n=sols.length,state=n===0?"🚩 還沒有人提出解方，搶先插下第一棵樹":n<3?`🔨 施工中：已有 ${n} 個解方，再 ${3-n} 個就能蓋起亮燈小屋`:`🏠 已蓋成亮燈小屋：${n} 個解方`;
     const canMod=S.isOwner||S.canEdit||S.mode==="local";
     pBody.innerHTML=`
@@ -434,7 +662,7 @@ async function renderPanel(){
       <section><h3 style="margin:0 0 8px;font-size:16px">大家的解方</h3>
         ${n?`<ul class="sol-list">${sols.map(s=>`<li class="sol"><div class="t">${esc(s.text)}${s.value?`<div class="muted" style="font-size:13px;margin-top:4px">💼 ${esc(s.value)}</div>`:""}</div>
           <button class="vote" data-vote="${esc(s.id)}" aria-pressed="${iVoted(s.id)}" aria-label="支持這個解方，目前 ${s.v} 票">👍 ${s.v}</button>
-          <div class="meta">${(s.uses||[]).map(k=>AREAS[k]?`<span class="mini" style="--c:${AREAS[k].css}">${AREAS[k].ch}</span>`:"").join("")}<span>· ${esc(s.by==="me"?"你":(s.name||"同學"))}</span>
+          <div class="meta">${(s.uses||[]).map(k=>RES[k]?`<span class="mini" style="--c:${RES[k].css}">${RES[k].ch}</span>`:"").join("")}<span>· ${esc(s.by==="me"?"你":(s.name||"同學"))}</span>
           ${(canMod||s.by===myId())?`<button class="del" data-delsol="${esc(s.id)}">刪除</button>`:""}</div></li>`).join("")}</ul>`
           :`<div class="empty">這裡還很空。你的想法會在旗子旁邊長出第一棵樹。</div>`}
       </section>
@@ -442,11 +670,8 @@ async function renderPanel(){
         <h3>提出你的解方</h3>
         <label class="lb" for="solText">你會怎麼解決這個問題？
           <textarea id="solText" maxlength="500" placeholder="例如：和返鄉青年合作，把老製茶廠改成體驗工坊，讓遊客跟著茶農做一次茶">${esc(draft.text||"")}</textarea></label>
-        <div class="lb">這個解方用到了哪些地方資源？（可複選）
-          <div class="uses">${AKEYS.map(k=>`<button type="button" class="chipbtn" style="--c:${AREAS[k].css}" data-use="${k}" aria-pressed="${draft.uses.includes(k)}">${AREAS[k].ch} ${AREAS[k].full}</button>`).join("")}</div></div>
-        <label class="lb" for="solValue">它能創造什麼工作或價值？（選填）
-          <input type="text" id="solValue" maxlength="120" placeholder="例如：2 位青年全職導覽、長輩成為技藝老師" value="${esc(draft.value||"")}"></label>
-        <label class="lb" for="nick">你的暱稱（顯示在解方旁，可不填）<input type="text" id="nick" maxlength="20" placeholder="例如：小安" value="${esc(S.nick)}"></label>
+        <div class="lb">這個解方用到了哪些地方資源？（人文地產景，可複選）
+          <div class="uses">${RKEYS.map(k=>`<button type="button" class="chipbtn" style="--c:${RES[k].css}" data-use="${k}" aria-pressed="${draft.uses.includes(k)}">${RES[k].ch} ${RES[k].full}</button>`).join("")}</div></div>
         <div class="err" id="solErr"></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" type="submit" ${S.readOnly?"disabled":""}>種下解方 🌱</button>
           ${S.mode==="local"?`<button class="btn" type="button" id="copyMine">複製我的解方</button>`:""}</div>
@@ -459,19 +684,19 @@ async function renderPanel(){
     const list=S.problems.filter(p=>f==="all"||(f==="open"?solsFor(p.id).length===0:p.area===f));
     pHead.innerHTML=`<h2 style="margin:0">問題清單</h2><span class="place" style="margin:0">點一題，人物會走過去</span>`;
     pBody.innerHTML=`<div class="filters">${[["all","全部"],["open","🚩 待解"]].concat(AKEYS.map(k=>[k,AREAS[k].ch])).map(([k,l])=>`<button class="chipbtn" style="--c:${AREAS[k]?AREAS[k].css:"var(--ink)"}" data-filter="${k}" aria-pressed="${f===k}">${l}</button>`).join("")}</div>
-      ${list.length?`<ul class="plist">${list.map(p=>{const a=AREAS[p.area]||AREAS.ren,n=solsFor(p.id).length;return `<li><button data-go="${esc(p.id)}"><span class="mini" style="--c:${a.css}">${a.ch}</span><span>${esc(p.title)}</span><span class="n">${n?"🌱"+n:"🚩"}</span></button></li>`}).join("")}</ul>`:`<div class="empty">這個分類目前沒有問題。</div>`}`;
+      ${list.length?`<ul class="plist">${list.map(p=>{const a=AREAS[p.area]||AREAS.t1,n=solsFor(p.id).length;return `<li><button data-go="${esc(p.id)}"><span class="mini" style="--c:${a.css}">${p.no?esc(p.no):a.ch}</span><span>${esc(p.title)}</span><span class="n">${n?"🌱"+n:"🚩"}</span></button></li>`}).join("")}</ul>`:`<div class="empty">這個分類目前沒有問題。</div>`}`;
     pBody.querySelectorAll("[data-filter]").forEach(b=>b.onclick=()=>{panelView.filter=b.dataset.filter;renderPanel()});
     pBody.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{const it=placed.find(x=>x.p.id===b.dataset.go);if(!it)return;overview=false;closePanel();av.tx=it.x;av.ty=it.y+8;av.goal=it.p.id;if(Math.hypot(it.x-av.x,it.y-av.y)>500){av.x=it.x;av.y=it.y+10}});
   }
   if(v.type==="add"){
     pHead.innerHTML=`<h2 style="margin:0">插一面問題旗</h2><span class="place" style="margin:0">把你盤點到的地方問題放上島</span>`;
     pBody.innerHTML=`<form class="form" id="addForm">
-      <div class="lb">這個問題屬於哪個面向？<div class="uses">${AKEYS.map((k,i)=>`<button type="button" class="chipbtn" style="--c:${AREAS[k].css}" data-area="${k}" aria-pressed="${i===0}">${AREAS[k].ch} ${AREAS[k].full}</button>`).join("")}</div></div>
-      <label class="lb" for="apPlace">地點（鄉鎮或村里）<input type="text" id="apPlace" maxlength="40" placeholder="例如：臺南市後壁區"></label>
+      <div class="lb">這個問題屬於哪個主題？<div class="uses">${AKEYS.map((k,i)=>`<button type="button" class="chipbtn" style="--c:${AREAS[k].css}" data-area="${k}" aria-pressed="${i===0}">${AREAS[k].ch} ${AREAS[k].full}</button>`).join("")}</div></div>
+      <label class="lb" for="apPlace">地點（鄉鎮或村里，選填）<input type="text" id="apPlace" maxlength="40" placeholder="例如：臺南市後壁區"></label>
       <label class="lb" for="apTitle">問題（一句話）<input type="text" id="apTitle" maxlength="80" placeholder="例如：稻米收購價低，年輕人不願接手農地"></label>
       <label class="lb" for="apDesc">補充說明（選填）<textarea id="apDesc" maxlength="400" placeholder="你觀察到什麼？訪談到誰？"></textarea></label>
       <div class="err" id="apErr"></div><button class="btn primary" type="submit" ${S.readOnly?"disabled":""}>插上旗子 🚩</button></form>`;
-    let area="ren";pBody.querySelectorAll("[data-area]").forEach(b=>b.onclick=()=>{area=b.dataset.area;pBody.querySelectorAll("[data-area]").forEach(x=>x.setAttribute("aria-pressed",x===b))});
+    let area="t1";pBody.querySelectorAll("[data-area]").forEach(b=>b.onclick=()=>{area=b.dataset.area;pBody.querySelectorAll("[data-area]").forEach(x=>x.setAttribute("aria-pressed",x===b))});
     $("addForm").onsubmit=async e=>{e.preventDefault();const title=$("apTitle").value.trim();if(title.length<4){$("apErr").textContent="問題至少寫 4 個字。";return}
       try{await addProblem({area,place:$("apPlace").value.trim(),title,desc:$("apDesc").value.trim()});toast("旗子插好了，去島上找找看");closePanel();overview=true}catch(err){$("apErr").textContent=failWrite(err)}};
   }
@@ -486,28 +711,48 @@ async function renderPanel(){
   }
   else if(v.type==="admin"){
     pHead.innerHTML=`<h2 style="margin:0">老師後台</h2><span class="place" style="margin:0">把學生盤點的問題一次放上島</span>`;
-    pBody.innerHTML=`<form class="form" id="impForm"><h3>批次匯入問題</h3>
-      <p class="muted" style="margin:0;font-size:13px">一行一個問題，格式：<b>面向｜地點｜問題｜補充說明</b>。面向填 人、文、地、產、景 其中一字；地點和補充說明可以留空。</p>
-      <textarea id="impText" style="min-height:180px" placeholder="產｜後壁區｜稻米收購價低，年輕人不願接手農地｜訪談三戶農家都說沒有接班人&#10;景｜後壁區｜車站前老街店面一半拉下鐵門&#10;人｜｜長照據點志工平均年齡超過 70 歲"></textarea>
+    pBody.innerHTML=`<div class="form"><h3>課堂的 40 個問題</h3><p class="muted" style="margin:0;font-size:13px">一鍵把 8 個主題、40 個問題插上島，學生就能直接開始提解方。</p>
+      <button class="btn primary" id="presetBtn" type="button">放上課堂的 40 個問題</button><div class="err" id="presetErr"></div></div>
+      <form class="form" id="impForm"><h3>另外匯入其他問題</h3>
+      <p class="muted" style="margin:0;font-size:13px">一行一個問題，格式：<b>主題編號｜問題｜補充說明</b>。主題編號填 1 到 8；補充說明可以留空。</p>
+      <textarea id="impText" style="min-height:180px" placeholder="2｜稻米收購價低，年輕人不願接手農地｜訪談三戶農家都說沒有接班人&#10;4｜車站前老街店面一半拉下鐵門"></textarea>
       <div class="err" id="impErr"></div><button class="btn primary" type="submit">匯入到島上</button></form>
       <div class="muted" style="font-size:13px">目前島上有 ${S.problems.length} 個問題、${S.solutions.length} 個解方。把這個網址分享給學生，他們不用登入就能插旗、提出解方和按讚。</div>
-      <button class="btn" id="exportAll" type="button">複製全部問題與解方</button><div class="copybox" id="exportBox" hidden></div>`;
+      <button class="btn" id="exportAll" type="button">複製全部問題與解方</button><div class="copybox" id="exportBox" hidden></div>
+      <div class="form"><h3>清空整座島</h3><p class="muted" style="margin:0;font-size:13px">刪除所有問題、解方和按讚，適合新學期重新開始。刪除後無法復原，建議先按上面的按鈕複製留存。</p>
+      <button class="btn" id="resetBtn" type="button">清空整座島</button><div class="err" id="resetErr"></div></div>`;
+    const armBtn=(b,label,fn)=>{b.onclick=async()=>{if(!b.dataset.armed){b.dataset.armed=1;b.textContent=label;setTimeout(()=>{if(b.isConnected&&b.dataset.armed){delete b.dataset.armed;b.textContent=b.dataset.orig}},4000);return}delete b.dataset.armed;b.disabled=true;try{await fn()}finally{if(b.isConnected){b.disabled=false;b.textContent=b.dataset.orig}}}};
+    const pb=$("presetBtn");pb.dataset.orig=pb.textContent;
+    const runPreset=async()=>{try{await api("import",{password:S.adminPw,items:PRESET.map(([area,no,title])=>({area,no,title}))});await load();toast("已插上 40 面旗子");closePanel();overview=true}catch(err){$("presetErr").textContent=failWrite(err)}};
+    if(S.problems.some(p=>p.no)){armBtn(pb,"島上已有課堂問題，再按一次會重複放上",runPreset)}else{pb.onclick=async()=>{pb.disabled=true;await runPreset();if(pb.isConnected)pb.disabled=false}}
+    const rb=$("resetBtn");rb.dataset.orig=rb.textContent;
+    armBtn(rb,"再按一次確認清空",async()=>{try{await api("reset",{password:S.adminPw});await load();toast("島已清空")}catch(err){$("resetErr").textContent=failWrite(err)}});
     $("impForm").onsubmit=async e=>{e.preventDefault();const lines=$("impText").value.split(/\n/).map(l=>l.trim()).filter(Boolean);const out=[],bad=[];
-      lines.forEach((l,i)=>{const parts=l.split(/[｜|]/).map(s=>s.trim());const k=CH2KEY[parts[0]];if(!k||!parts[2]){bad.push(i+1);return}out.push({area:k,place:parts[1]||"",title:parts[2],desc:parts.slice(3).join("｜")})});
-      if(bad.length){$("impErr").textContent=`第 ${bad.join("、")} 行格式不對，面向要是人文地產景其中一字，而且要有問題內容。`;return}
+      lines.forEach((l,i)=>{const parts=l.split(/[｜|]/).map(s=>s.trim());const k=themeKey(parts[0]);if(!k||!parts[1]||parts[1].length<4){bad.push(i+1);return}out.push({area:k,title:parts[1],desc:parts.slice(2).join("｜")})});
+      if(bad.length){$("impErr").textContent=`第 ${bad.join("、")} 行格式不對，主題編號要是 1 到 8，而且問題至少 4 個字。`;return}
       if(!out.length){$("impErr").textContent="請先貼上問題。";return}
-      try{for(const p of out)await addProblem(p);toast(`已插上 ${out.length} 面旗子`);closePanel();overview=true}catch(err){$("impErr").textContent=failWrite(err)}};
+      try{await api("import",{password:S.adminPw,items:out});await load();toast(`已插上 ${out.length} 面旗子`);closePanel();overview=true}catch(err){$("impErr").textContent=failWrite(err)}};
     $("exportAll").onclick=()=>{const txt=exportText();copy(txt,$("exportBox"))};
+  }
+  if(v.type==="nick"){
+    $("pClose").hidden=!S.nick;
+    pHead.innerHTML=`<h2 style="margin:0">${S.nick?"修改暱稱":"歡迎來到解方島"}</h2><span class="place" style="margin:0">${S.nick?"新的暱稱會用在之後提出的解方":"出發前，先告訴大家你是誰"}</span>`;
+    pBody.innerHTML=`<form class="form" id="nickForm"><label class="lb" for="nickIn">你的暱稱（會顯示在你提出的解方旁邊）<input type="text" id="nickIn" maxlength="20" placeholder="例如：小安" autocomplete="nickname" value="${esc(S.nick)}"></label>
+      <div class="err" id="nickErr"></div><button class="btn primary" type="submit">${S.nick?"儲存":"出發！"}</button></form>`;
+    $("nickForm").onsubmit=e=>{e.preventDefault();const n=$("nickIn").value.trim().slice(0,20);if(!n){$("nickErr").textContent="請輸入暱稱。";return}
+      const first=!S.nick;S.nick=n;LS.set("isle_nick",n);updateMe();lastSync=0;sync();if(first&&!LS.get("isle_seen",0))openPanel({type:"how"});else{closePanel();if(!first)toast("暱稱已更新")}};
+    setTimeout(()=>{const i=$("nickIn");if(i&&!S.nick)i.focus()},60);
   }
   if(v.type==="how"){
     pHead.innerHTML=`<h2 style="margin:0">怎麼玩</h2>`;
     pBody.innerHTML=`<div class="howto"><ol>
-      <li>點地圖讓人物走過去，電腦也可以用方向鍵或 WASD。</li>
-      <li>島分成五個聚落：<b>人・文・地・產・景</b>，每面旗子是一個大家盤點出來的地方問題。</li>
-      <li><b>紅旗</b>代表還沒有人提出解方。走過去點旗子，寫下你的解方，並標記它用到哪些地方資源。</li>
+      <li>點地面讓人物走過去，拖曳可以旋轉視角，滾輪或兩指可以縮放。電腦也可以用方向鍵或 WASD 走路。</li>
+      <li>島分成 8 個主題區，從「人口與青年」到「地方發展與資訊」。每面旗子是課堂上盤點出來的一個地方問題，旗子上的標籤顯示問題編號和解方數量。</li>
+      <li><b>紅旗</b>代表還沒有人提出解方。走過去點旗子，寫下你的解方，並標記它用到哪些地方資源：<b>人、文、地、產、景</b>。</li>
       <li>每多一個解方，旗子旁就長出一棵樹；累積 3 個解方，紅旗就會蓋成<b>亮燈小屋</b>。</li>
+      <li>島上其他人物是正在線上的同學，頭上會顯示他們的暱稱。</li>
       <li>看到好點子就按 👍 支持。目標：讓整座島亮起來。</li></ol>
-      <p class="muted" style="font-size:13px;margin-top:12px">好的解方通常會結合兩三種地方資源，並說清楚能創造什麼工作，而不只是辦一場活動。</p></div>
+      <p class="muted" style="font-size:13px;margin-top:12px">好的解方通常會結合兩三種地方資源，而不只是辦一場活動。</p></div>
       <button class="btn primary" id="howGo" type="button">開始探索</button>`;
     $("howGo").onclick=()=>{LS.set("isle_seen",1);closePanel()};
   }
@@ -518,25 +763,26 @@ function bindProblem(p){
   const armDel=(b,fn)=>{b.onclick=async()=>{if(b.dataset.armed){try{await fn()}catch(e){toast(failWrite(e))}}else{b.dataset.armed=1;b.textContent="再按一次確認刪除";setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent="刪除"}},3000)}}};
   pBody.querySelectorAll("[data-delsol]").forEach(b=>armDel(b,()=>delSolution(b.dataset.delsol)));
   pBody.querySelectorAll("[data-delprob]").forEach(b=>armDel(b,async()=>{await delProblem(b.dataset.delprob);closePanel()}));
-  const ta=$("solText"),vi=$("solValue");ta.oninput=()=>draft.text=ta.value;vi.oninput=()=>draft.value=vi.value;
+  const ta=$("solText");ta.oninput=()=>draft.text=ta.value;
   $("solForm").onsubmit=async e=>{e.preventDefault();const text=ta.value.trim();
     if(text.length<10){$("solErr").textContent="解方至少寫 10 個字，說明你要怎麼做。";return}
     if(!draft.uses.length){$("solErr").textContent="請至少選一個用到的地方資源。";return}
     const btn=e.submitter||$("solForm").querySelector("[type=submit]");btn.disabled=true;
-    S.nick=$("nick").value.trim();LS.set("isle_nick",S.nick);
-    try{await addSolution({problemId:p.id,text,value:vi.value.trim(),uses:draft.uses.slice()});draft.text="";draft.value="";draft.uses=[];toast("🌱 解方種下了！");renderPanel()}
+    try{await addSolution({problemId:p.id,text,uses:draft.uses.slice()});draft.text="";draft.uses=[];toast("🌱 解方種下了！");renderPanel()}
     catch(err){$("solErr").textContent=failWrite(err);btn.disabled=false}};
   const cm=$("copyMine");if(cm)cm.onclick=()=>{const mine=S.solutions.filter(s=>s.by===myId());if(!mine.length){toast("你還沒有提出解方");return}
-    copy(mine.map(s=>{const pp=S.problems.find(x=>x.id===s.problemId);return `【問題】${pp?pp.title:""}\n【解方】${s.text}\n【用到資源】${(s.uses||[]).map(k=>AREAS[k].ch).join("、")}${s.value?`\n【創造價值】${s.value}`:""}`}).join("\n\n"),null)};
+    copy(mine.map(s=>{const pp=S.problems.find(x=>x.id===s.problemId);return `【問題】${pp?pp.title:""}\n【解方】${s.text}\n【用到資源】${(s.uses||[]).map(k=>RES[k]?RES[k].ch:"").join("、")}${s.value?`\n【創造價值】${s.value}`:""}`}).join("\n\n"),null)};
 }
-function exportText(){return S.problems.map(p=>{const a=AREAS[p.area]||AREAS.ren;const ss=solsFor(p.id).map(s=>({...s,v:voteCount(s.id)})).sort((x,y)=>y.v-x.v);
-  return `[${a.ch}] ${p.place?p.place+"｜":""}${p.title}\n`+(ss.length?ss.map(s=>`  - ${s.text}（${(s.uses||[]).map(k=>AREAS[k].ch).join("")}，👍${s.v}）`).join("\n"):"  （尚無解方）")}).join("\n\n")}
+function exportText(){return S.problems.map(p=>{const a=AREAS[p.area]||AREAS.t1;const ss=solsFor(p.id).map(s=>({...s,v:voteCount(s.id)})).sort((x,y)=>y.v-x.v);
+  return `${a.name}${p.no?" #"+p.no:""}｜${p.title}\n`+(ss.length?ss.map(s=>`  - ${s.text}（${(s.uses||[]).map(k=>RES[k]?RES[k].ch:"").join("")}，👍${s.v}）`).join("\n"):"  （尚無解方）")}).join("\n\n")}
 function copy(txt,box){const done=()=>toast("已複製");
   const fallback=()=>{const b=box||(()=>{const d=document.createElement("div");d.className="copybox";pBody.appendChild(d);return d})();b.hidden=false;b.textContent=txt;const r=document.createRange();r.selectNodeContents(b);const s=getSelection();s.removeAllRanges();s.addRange(r);toast("已選取文字，請按 Ctrl+C 或長按複製")};
   try{navigator.clipboard.writeText(txt).then(done,fallback)}catch(e){fallback()}}
 
 $("bList").onclick=()=>openPanel({type:"list",filter:"all"});
 $("bHow").onclick=()=>openPanel({type:"how"});
+$("bMe").onclick=()=>openPanel({type:"nick"});
+function updateMe(){$("meName").textContent=S.nick||"設定暱稱";meEl.textContent=S.nick||"我"}
 $("bAdd").onclick=()=>openPanel({type:"add"});
 $("bAdmin").onclick=()=>openPanel({type:"admin"});
 
@@ -551,11 +797,12 @@ function onData(){
   $("sMine").textContent=S.solutions.filter(s=>s.by===myId()).length;
   setNotice();
   if(panelView&&(panelView.type==="problem"||panelView.type==="list")){
-    const ae=document.activeElement;if(!(ae&&(ae.id==="solText"||ae.id==="solValue")))renderPanel();
+    const ae=document.activeElement;if(!(ae&&(ae.id==="solText"||ae.id==="nickIn")))renderPanel();
   }
 }
 requestAnimationFrame(frame);
-if(!LS.get("isle_seen",0))openPanel({type:"how"});
+updateMe();
+if(!S.nick)openPanel({type:"nick"});else if(!LS.get("isle_seen",0))openPanel({type:"how"});
 initData();
 })();
 </script>
