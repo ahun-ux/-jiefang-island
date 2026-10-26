@@ -12,18 +12,18 @@
 :root{
   --bg:#eef5f1; --panel:#ffffff; --ink:#173a40; --muted:#5b7479; --line:#d7e5e2;
   --accent:#0e5a63; --accent-ink:#ffffff; --accent-soft:#dcefee; --warn:#c0453a;
-  --sky:#d4eef0;
+  --sky:#d4eef0; --sol-bg:#fff5e3; --sol-line:#f0d9ad;
   --c-ren:#d0533f; --c-wen:#8a5bb3; --c-di:#3d8a50; --c-chan:#c08419; --c-jing:#2f86a3;
   --display:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
   --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0f1c1f; --panel:#172a2e; --ink:#e3efed; --muted:#9cb6b8; --line:#28403f;
-  --accent:#5cc1c4; --accent-ink:#082326; --accent-soft:#1e3a3d; --warn:#ef7b6c; --sky:#d4eef0;
+  --accent:#5cc1c4; --accent-ink:#082326; --accent-soft:#1e3a3d; --warn:#ef7b6c; --sky:#d4eef0; --sol-bg:#3a3222; --sol-line:#5c4c2c;
   --c-ren:#ef8370; --c-wen:#b892dc; --c-di:#71c084; --c-chan:#ecbd4e; --c-jing:#62b9d6; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0f1c1f; --panel:#172a2e; --ink:#e3efed; --muted:#9cb6b8; --line:#28403f;
-  --accent:#5cc1c4; --accent-ink:#082326; --accent-soft:#1e3a3d; --warn:#ef7b6c; --sky:#d4eef0;
+  --accent:#5cc1c4; --accent-ink:#082326; --accent-soft:#1e3a3d; --warn:#ef7b6c; --sky:#d4eef0; --sol-bg:#3a3222; --sol-line:#5c4c2c;
   --c-ren:#ef8370; --c-wen:#b892dc; --c-di:#71c084; --c-chan:#ecbd4e; --c-jing:#62b9d6; color-scheme:dark}
 html,body{margin:0}
 [hidden]{display:none!important}
@@ -77,7 +77,7 @@ button{font:inherit}
 .desc{margin:0;color:var(--ink)}
 .state{font-size:13px;color:var(--muted);background:var(--accent-soft);border-radius:10px;padding:6px 10px}
 .sol-list{display:flex;flex-direction:column;gap:8px;list-style:none;margin:0;padding:0}
-.sol{border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px}
+.sol{background:var(--sol-bg);border:1px solid var(--sol-line);border-radius:12px;padding:10px 12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px}
 .sol .t{overflow-wrap:anywhere;white-space:pre-wrap}
 .sol .meta{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:12px;color:var(--muted)}
 .mini{font-size:11px;font-weight:700;color:#fff;background:var(--c);padding:0 7px;border-radius:999px}
@@ -102,6 +102,20 @@ textarea{min-height:84px;resize:vertical}
 .filters{display:flex;flex-wrap:wrap;gap:6px}
 .howto ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
 .copybox{white-space:pre-wrap;font-size:13px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px;max-height:160px;overflow:auto}
+#fw{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:50}
+.cele{position:fixed;left:50%;top:22%;transform:translate(-50%,-50%);z-index:51;pointer-events:none;background:rgba(23,58,64,.92);color:#fff;border-radius:22px;padding:16px 26px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.3);display:flex;flex-direction:column;gap:4px;max-width:min(90vw,520px)}
+.cele b{font-size:clamp(20px,4vw,28px);font-weight:900}
+.cele span{font-size:14px;opacity:.85}
+.cele.show{animation:pop 3.6s ease forwards}
+@keyframes pop{0%{opacity:0;transform:translate(-50%,-40%) scale(.8)}10%{opacity:1;transform:translate(-50%,-50%) scale(1.04)}16%{transform:translate(-50%,-50%) scale(1)}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.cele.show{animation:none}}
+.roster{display:flex;flex-direction:column;gap:6px}
+.rs{border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+.rs summary{cursor:pointer;padding:8px 10px;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline}
+.rs summary .muted{font-size:12px}
+.rs .rn{margin-left:auto;font-size:13px;font-variant-numeric:tabular-nums}
+.rs ol{margin:0;padding:0 12px 10px 30px;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.muted{color:var(--muted)}
 @media (max-width:700px){
   .brand h1{font-size:21px}
   .panel{top:auto;left:0;right:0;bottom:0;width:100%;height:72%;border-radius:18px 18px 0 0;padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -112,6 +126,8 @@ textarea{min-height:84px;resize:vertical}
 
 </head>
 <body>
+<canvas id="fw" hidden aria-hidden="true"></canvas>
+<div id="cele" class="cele" hidden role="status"><b></b><span></span></div>
 <div class="app">
   <div class="top">
     <div class="brand"><h1>地方創生解方島</h1><span>8 個主題、40 個地方問題，挑一面待解的旗子提出你的解方</span></div>
@@ -123,7 +139,7 @@ textarea{min-height:84px;resize:vertical}
       <span class="stat">線上 <b id="sOnline">1</b></span>
     </div>
     <div class="tbtns">
-      <button class="btn" id="bMe" aria-label="修改暱稱">👤 <span id="meName">設定暱稱</span></button>
+      <button class="btn" id="bMe" aria-label="我的資料">👤 <span id="meName">設定暱稱</span></button>
       <button class="btn" id="bList">問題清單</button>
       <button class="btn" id="bHow">怎麼玩</button>
       <button class="btn" id="bAdd">＋插一面問題旗</button>
@@ -229,7 +245,7 @@ const $=id=>document.getElementById(id);
 const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 
 /* ---------- 資料層（連到 Netlify 後端 /api） ---------- */
-const S={mode:"net",problems:[],solutions:[],counts:{},mine:new Set(),isOwner:false,canEdit:false,readOnly:false,adminPw:"",adminEnabled:null,nick:LS.get("isle_nick",""),loaded:false,offline:false};
+const S={mode:"net",problems:[],solutions:[],counts:{},mine:new Set(),isOwner:false,canEdit:false,readOnly:false,adminPw:"",adminEnabled:null,nick:LS.get("isle_nick",""),real:LS.get("isle_real",""),loaded:false,offline:false};
 let UID=LS.get("isle_uid",null);
 if(!UID){UID=Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,"0")).join("");LS.set("isle_uid",UID)}
 function myId(){return "me"}
@@ -252,13 +268,17 @@ async function sync(){
   finally{syncing=false;lastSync=Date.now()}
 }
 
+let reloadPending=false;
 async function load(){
-  if(loading)return;loading=true;
+  if(loading){reloadPending=true;return}loading=true;
   try{const d=await api("state");
-    S.problems=(d.problems||[]).sort((a,b)=>(a.at||0)-(b.at||0));S.solutions=d.solutions||[];S.counts=d.counts||{};S.mine=new Set(d.mine||[]);S.adminEnabled=!!d.adminEnabled;S.offline=false;S.loaded=true;if(d.ver)lastVer=d.ver;
+    const prevIds=S.loaded?new Set(S.solutions.map(x=>x.id)):null;
+    S.problems=(d.problems||[]).sort((a,b)=>(a.at||0)-(b.at||0));S.solutions=d.solutions||[];
+    if(prevIds){const fresh=S.solutions.filter(x=>!prevIds.has(x.id));if(fresh.length)setTimeout(()=>celebrate(fresh),50)}S.counts=d.counts||{};S.mine=new Set(d.mine||[]);S.adminEnabled=!!d.adminEnabled;S.offline=false;S.loaded=true;if(d.ver)lastVer=d.ver;
   }catch(e){S.offline=true}
   finally{loading=false}
   onData();
+  if(reloadPending){reloadPending=false;load()}
 }
 async function initData(){
   $("bAdmin").hidden=false;$("bAdmin").textContent="老師";
@@ -283,8 +303,8 @@ function failWrite(e){
   if(c==="forbidden")return "只有作者本人或老師可以刪除。";
   return "送出失敗，請檢查網路後再試一次。";
 }
-async function addProblem(p){await api("problem",{...p,name:S.nick});await load()}
-async function addSolution(s){await api("solution",{...s,name:S.nick});await load()}
+async function addProblem(p){await api("problem",{...p,name:S.nick,real:S.real});await load()}
+async function addSolution(s){await api("solution",{...s,name:S.nick,real:S.real});await load()}
 let voting=false;
 async function toggleVote(sid){
   if(voting)return;voting=true;
@@ -638,8 +658,9 @@ function frame(ts){
 /* ---------- 面板 ---------- */
 const panel=$("panel"),pHead=$("pHead"),pBody=$("pBody");
 let panelView=null;
-function openPanel(view){if(!S.nick&&view.type!=="nick"&&view.type!=="admin")view={type:"nick"};panelView=view;$("pClose").hidden=false;panel.hidden=false;renderPanel()}
-function closePanel(){if(panelView&&panelView.type==="nick"&&!S.nick)return;panel.hidden=true;panelView=null;selId=null}
+const hasId=()=>!!(S.nick&&S.real);
+function openPanel(view){if(!hasId()&&view.type!=="nick"&&view.type!=="admin")view={type:"nick"};panelView=view;$("pClose").hidden=false;panel.hidden=false;renderPanel()}
+function closePanel(){if(panelView&&panelView.type==="nick"&&!hasId())return;panel.hidden=true;panelView=null;selId=null}
 $("pClose").onclick=closePanel;
 function openProblem(id){selId=id;openPanel({type:"problem",id})}
 function toast(m){const t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2800)}
@@ -669,7 +690,7 @@ async function renderPanel(){
       <form class="form" id="solForm">
         <h3>提出你的解方</h3>
         <label class="lb" for="solText">你會怎麼解決這個問題？
-          <textarea id="solText" maxlength="500" placeholder="例如：和返鄉青年合作，把老製茶廠改成體驗工坊，讓遊客跟著茶農做一次茶">${esc(draft.text||"")}</textarea></label>
+          <textarea id="solText" maxlength="500">${esc(draft.text||"")}</textarea></label>
         <div class="lb">這個解方用到了哪些地方資源？（人文地產景，可複選）
           <div class="uses">${RKEYS.map(k=>`<button type="button" class="chipbtn" style="--c:${RES[k].css}" data-use="${k}" aria-pressed="${draft.uses.includes(k)}">${RES[k].ch} ${RES[k].full}</button>`).join("")}</div></div>
         <div class="err" id="solErr"></div>
@@ -713,6 +734,9 @@ async function renderPanel(){
     pHead.innerHTML=`<h2 style="margin:0">老師後台</h2><span class="place" style="margin:0">把學生盤點的問題一次放上島</span>`;
     pBody.innerHTML=`<div class="form"><h3>課堂的 40 個問題</h3><p class="muted" style="margin:0;font-size:13px">一鍵把 8 個主題、40 個問題插上島，學生就能直接開始提解方。</p>
       <button class="btn primary" id="presetBtn" type="button">放上課堂的 40 個問題</button><div class="err" id="presetErr"></div></div>
+      <div class="form"><h3>學生解方紀錄（評分用）</h3><p class="muted" style="margin:0;font-size:13px">依姓名或學號整理每位學生提出的解方和獲得的讚數。可以複製成表格，直接貼到 Excel 或 Google 試算表。</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" id="rosterBtn" type="button">查看紀錄</button><button class="btn" id="rosterSum" type="button" hidden>複製總表</button><button class="btn" id="rosterDet" type="button" hidden>複製明細</button></div>
+      <div class="err" id="rosterErr"></div><div id="roster" class="roster"></div><div class="copybox" id="rosterBox" hidden></div></div>
       <form class="form" id="impForm"><h3>另外匯入其他問題</h3>
       <p class="muted" style="margin:0;font-size:13px">一行一個問題，格式：<b>主題編號｜問題｜補充說明</b>。主題編號填 1 到 8；補充說明可以留空。</p>
       <textarea id="impText" style="min-height:180px" placeholder="2｜稻米收購價低，年輕人不願接手農地｜訪談三戶農家都說沒有接班人&#10;4｜車站前老街店面一半拉下鐵門"></textarea>
@@ -733,15 +757,22 @@ async function renderPanel(){
       if(!out.length){$("impErr").textContent="請先貼上問題。";return}
       try{await api("import",{password:S.adminPw,items:out});await load();toast(`已插上 ${out.length} 面旗子`);closePanel();overview=true}catch(err){$("impErr").textContent=failWrite(err)}};
     $("exportAll").onclick=()=>{const txt=exportText();copy(txt,$("exportBox"))};
+    $("rosterBtn").onclick=async()=>{const b=$("rosterBtn");b.disabled=true;$("rosterErr").textContent="";
+      try{const d=await api("roster",{password:S.adminPw});renderRoster(d)}catch(err){$("rosterErr").textContent=failWrite(err)}finally{b.disabled=false;b.textContent="重新整理紀錄"}};
   }
   if(v.type==="nick"){
-    $("pClose").hidden=!S.nick;
-    pHead.innerHTML=`<h2 style="margin:0">${S.nick?"修改暱稱":"歡迎來到解方島"}</h2><span class="place" style="margin:0">${S.nick?"新的暱稱會用在之後提出的解方":"出發前，先告訴大家你是誰"}</span>`;
-    pBody.innerHTML=`<form class="form" id="nickForm"><label class="lb" for="nickIn">你的暱稱（會顯示在你提出的解方旁邊）<input type="text" id="nickIn" maxlength="20" placeholder="例如：小安" autocomplete="nickname" value="${esc(S.nick)}"></label>
-      <div class="err" id="nickErr"></div><button class="btn primary" type="submit">${S.nick?"儲存":"出發！"}</button></form>`;
-    $("nickForm").onsubmit=e=>{e.preventDefault();const n=$("nickIn").value.trim().slice(0,20);if(!n){$("nickErr").textContent="請輸入暱稱。";return}
-      const first=!S.nick;S.nick=n;LS.set("isle_nick",n);updateMe();lastSync=0;sync();if(first&&!LS.get("isle_seen",0))openPanel({type:"how"});else{closePanel();if(!first)toast("暱稱已更新")}};
-    setTimeout(()=>{const i=$("nickIn");if(i&&!S.nick)i.focus()},60);
+    const edit=hasId();$("pClose").hidden=!edit;
+    pHead.innerHTML=`<h2 style="margin:0">${edit?"我的資料":"歡迎來到解方島"}</h2><span class="place" style="margin:0">${edit?"修改後會用在之後提出的解方":"出發前，先登記你是誰"}</span>`;
+    pBody.innerHTML=`<form class="form" id="nickForm">
+      <label class="lb" for="realIn">姓名或學號（只有老師看得到，用來登記成績）<input type="text" id="realIn" maxlength="30" autocomplete="name" value="${esc(S.real)}"></label>
+      <label class="lb" for="nickIn">暱稱（顯示在島上，大家都看得到）<input type="text" id="nickIn" maxlength="20" autocomplete="nickname" value="${esc(S.nick)}"></label>
+      <div class="err" id="nickErr"></div><button class="btn primary" type="submit">${edit?"儲存":"出發！"}</button></form>`;
+    $("nickForm").onsubmit=e=>{e.preventDefault();const rl=$("realIn").value.trim().slice(0,30),n=$("nickIn").value.trim().slice(0,20);
+      if(!rl){$("nickErr").textContent="請輸入姓名或學號，老師才知道是誰提出的解方。";return}
+      if(!n){$("nickErr").textContent="請輸入暱稱。";return}
+      S.real=rl;LS.set("isle_real",rl);S.nick=n;LS.set("isle_nick",n);updateMe();lastSync=0;sync();
+      if(!edit&&!LS.get("isle_seen",0))openPanel({type:"how"});else{closePanel();if(edit)toast("資料已更新")}};
+    setTimeout(()=>{const i=$(S.real?"nickIn":"realIn");if(i&&!edit)i.focus()},60);
   }
   if(v.type==="how"){
     pHead.innerHTML=`<h2 style="margin:0">怎麼玩</h2>`;
@@ -768,10 +799,51 @@ function bindProblem(p){
     if(text.length<10){$("solErr").textContent="解方至少寫 10 個字，說明你要怎麼做。";return}
     if(!draft.uses.length){$("solErr").textContent="請至少選一個用到的地方資源。";return}
     const btn=e.submitter||$("solForm").querySelector("[type=submit]");btn.disabled=true;
-    try{await addSolution({problemId:p.id,text,uses:draft.uses.slice()});draft.text="";draft.uses=[];toast("🌱 解方種下了！");renderPanel()}
+    try{await addSolution({problemId:p.id,text,uses:draft.uses.slice()});draft.text="";draft.uses=[];renderPanel()}
     catch(err){$("solErr").textContent=failWrite(err);btn.disabled=false}};
   const cm=$("copyMine");if(cm)cm.onclick=()=>{const mine=S.solutions.filter(s=>s.by===myId());if(!mine.length){toast("你還沒有提出解方");return}
     copy(mine.map(s=>{const pp=S.problems.find(x=>x.id===s.problemId);return `【問題】${pp?pp.title:""}\n【解方】${s.text}\n【用到資源】${(s.uses||[]).map(k=>RES[k]?RES[k].ch:"").join("、")}${s.value?`\n【創造價值】${s.value}`:""}`}).join("\n\n"),null)};
+}
+function renderRoster(d){
+  const P={};(d.problems||[]).forEach(p=>P[p.id]=p);
+  const groups=new Map();
+  (d.solutions||[]).slice().sort((a,b)=>a.at-b.at).forEach(s=>{const key=s.real?"r:"+s.real:"a:"+s.ak;
+    if(!groups.has(key))groups.set(key,{real:s.real,names:new Set(),list:[],votes:0});const g=groups.get(key);g.names.add(s.name||"（無暱稱）");g.list.push(s);g.votes+=s.votes});
+  const rows=[...groups.values()].sort((a,b)=>(a.real||"~").localeCompare(b.real||"~","zh-Hant"));
+  const fmt=t=>{const x=new Date(t);return `${x.getMonth()+1}/${x.getDate()} ${String(x.getHours()).padStart(2,"0")}:${String(x.getMinutes()).padStart(2,"0")}`};
+  const res=s=>(s.uses||[]).map(k=>RES[k]?RES[k].ch:"").join("");
+  $("roster").innerHTML=rows.length?`<div class="muted" style="font-size:13px">共 ${rows.length} 位學生、${(d.solutions||[]).length} 個解方</div>`+rows.map(g=>`<details class="rs"><summary><b>${esc(g.real||"（未填姓名學號）")}</b><span class="muted">${esc([...g.names].join("、"))}</span><span class="rn">${g.list.length} 個解方・👍 ${g.votes}</span></summary>
+      <ol>${g.list.map(s=>{const p=P[s.problemId]||{};return `<li><span class="muted">${p.no?"#"+esc(p.no)+" ":""}${esc((p.title||"（問題已刪除）").slice(0,24))}</span><div>${esc(s.text)}</div><div class="muted" style="font-size:12px">${esc(res(s))}・👍 ${s.votes}・${fmt(s.at)}</div></li>`}).join("")}</ol></details>`).join("")
+    :`<div class="empty">還沒有學生提出解方。</div>`;
+  const clean=t=>String(t??"").replace(/[\t\r\n]+/g," ");
+  const sum=["姓名或學號\t暱稱\t解方數\t獲得讚數"].concat(rows.map(g=>[g.real||"（未填）",[...g.names].join("、"),g.list.length,g.votes].map(clean).join("\t"))).join("\n");
+  const det=["姓名或學號\t暱稱\t問題編號\t問題\t解方\t用到的資源\t讚數\t時間"].concat((d.solutions||[]).slice().sort((a,b)=>(a.real||"~").localeCompare(b.real||"~","zh-Hant")||a.at-b.at).map(s=>{const p=P[s.problemId]||{};return[s.real||"（未填）",s.name,p.no,p.title,s.text,res(s),s.votes,fmt(s.at)].map(clean).join("\t")})).join("\n");
+  const bs=$("rosterSum"),bd=$("rosterDet");bs.hidden=bd.hidden=!rows.length;
+  bs.onclick=()=>copy(sum,$("rosterBox"));bd.onclick=()=>copy(det,$("rosterBox"));
+}
+/* 有人提出解方：全螢幕煙火＋公告 */
+let fw=null;
+function celebrate(list){
+  const s=list[list.length-1],p=S.problems.find(x=>x.id===s.problemId);
+  const who=s.by==="me"?"你":(s.name||"同學");
+  const msg=list.length>1?`有 ${list.length} 個新解方誕生了！`:`${who}在 ${p&&p.no?"#"+p.no+" ":""}提出了解方！`;
+  const el=$("cele");el.querySelector("b").textContent="🎉 "+msg;el.querySelector("span").textContent=p&&list.length===1?p.title:"一起讓島亮起來";
+  el.hidden=false;el.classList.remove("show");void el.offsetWidth;el.classList.add("show");clearTimeout(el._t);el._t=setTimeout(()=>{el.hidden=true},3600);
+  if(!window.matchMedia||!matchMedia("(prefers-reduced-motion: reduce)").matches)fireworks();
+}
+function fireworks(){
+  const cv=$("fw"),g=cv.getContext("2d"),dpr=Math.min(2,window.devicePixelRatio||1);
+  const W2=cv.width=innerWidth*dpr,H2=cv.height=innerHeight*dpr;cv.hidden=false;
+  const COLS=["#ff6b6b","#ffd166","#06d6a0","#4cc9f0","#c77dff","#ff9f68","#ffffff"];
+  const parts=[],bursts=[];const t0=performance.now();
+  for(let i=0;i<7;i++)bursts.push({at:i*260+Math.random()*120,x:(.15+Math.random()*.7)*W2,y:(.15+Math.random()*.35)*H2,done:false});
+  if(fw)cancelAnimationFrame(fw);
+  const step=now=>{const t=now-t0;g.clearRect(0,0,W2,H2);
+    bursts.forEach(b=>{if(!b.done&&t>=b.at){b.done=true;const c=COLS[Math.random()*COLS.length|0],n=70;for(let i=0;i<n;i++){const a=i/n*Math.PI*2,sp=(2+Math.random()*4.5)*dpr;parts.push({x:b.x,y:b.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,c:Math.random()<.25?"#ffffff":c})}}});
+    for(const q of parts){q.x+=q.vx;q.y+=q.vy;q.vy+=.06*dpr;q.vx*=.985;q.vy*=.985;q.life-=.011;if(q.life>0){g.globalAlpha=q.life;g.fillStyle=q.c;g.fillRect(q.x,q.y,3*dpr,3*dpr)}}
+    g.globalAlpha=1;
+    if(t<3800)fw=requestAnimationFrame(step);else{g.clearRect(0,0,W2,H2);cv.hidden=true;fw=null}};
+  fw=requestAnimationFrame(step);
 }
 function exportText(){return S.problems.map(p=>{const a=AREAS[p.area]||AREAS.t1;const ss=solsFor(p.id).map(s=>({...s,v:voteCount(s.id)})).sort((x,y)=>y.v-x.v);
   return `${a.name}${p.no?" #"+p.no:""}｜${p.title}\n`+(ss.length?ss.map(s=>`  - ${s.text}（${(s.uses||[]).map(k=>RES[k]?RES[k].ch:"").join("")}，👍${s.v}）`).join("\n"):"  （尚無解方）")}).join("\n\n")}
@@ -802,7 +874,7 @@ function onData(){
 }
 requestAnimationFrame(frame);
 updateMe();
-if(!S.nick)openPanel({type:"nick"});else if(!LS.get("isle_seen",0))openPanel({type:"how"});
+if(!hasId())openPanel({type:"nick"});else if(!LS.get("isle_seen",0))openPanel({type:"how"});
 initData();
 })();
 </script>

@@ -50,6 +50,7 @@ function makeProblem(body, me, at) {
     place: clip(body.place, 40),
     desc: clip(body.desc, 400),
     name: clip(body.name, 20),
+    real: clip(body.real, 30), // 姓名或學號，只有老師看得到
     author: me, at,
   };
 }
@@ -97,7 +98,7 @@ export default async (req) => {
         counts[sid] = (counts[sid] || 0) + 1;
         if (me && who === me) mine.push(sid);
       }
-      const pub = ({ author, ...rest }) => ({ ...rest, by: me && author === me ? "me" : "x" });
+      const pub = ({ author, real, ...rest }) => ({ ...rest, by: me && author === me ? "me" : "x" });
       return res({
         problems: problems.map(pub),
         solutions: solutions.map(pub),
@@ -161,6 +162,22 @@ export default async (req) => {
       return res({ ok: true, count: list.length });
     }
 
+    // ---- 老師：學生解方紀錄（評分用） ----
+    if (route === "roster") {
+      if (!isAdmin(body.password)) return res({ error: "forbidden" }, 403);
+      const [problems, solutions, votes] = await Promise.all([readAll(store, "p/"), readAll(store, "s/"), store.list({ prefix: "v/" })]);
+      const counts = {};
+      for (const b of votes.blobs) { const sid = b.key.split("/")[1]; counts[sid] = (counts[sid] || 0) + 1; }
+      return res({
+        problems: problems.map((p) => ({ id: p.id, no: p.no || "", title: p.title, area: p.area })),
+        solutions: solutions.map((s) => ({
+          id: s.id, problemId: s.problemId, text: s.text, uses: s.uses || [],
+          name: s.name || "", real: s.real || "", ak: String(s.author || "").slice(0, 6),
+          at: s.at, votes: counts[s.id] || 0,
+        })),
+      });
+    }
+
     // ---- 老師清空整座島 ----
     if (route === "reset") {
       if (!isAdmin(body.password)) return res({ error: "forbidden" }, 403);
@@ -182,8 +199,8 @@ export default async (req) => {
       if ((await countPrefix(store, "s/")) >= MAX_SOLUTIONS) return res({ error: "full" }, 409);
       const s = {
         id: newId(), problemId: pid, text, uses,
-        value: clip(body.value, 120),
         name: clip(body.name, 20),
+        real: clip(body.real, 30), // 姓名或學號，只有老師看得到
         author: me, at: Date.now(),
       };
       await store.setJSON("s/" + s.id, s);
