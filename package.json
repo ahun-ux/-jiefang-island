@@ -1,8 +1,8 @@
 {
-  "name": "jiefang-island",
+  "name": "penghu-sweep-map",
   "private": true,
   "type": "module",
   "dependencies": {
-    "@netlify/blobs": "11.1.4"
+    "@netlify/blobs": "^11.1.9"
   }
 }

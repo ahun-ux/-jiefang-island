@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>魂魂的掃街地圖</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&display=swap">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='16' fill='%237ccfd6'/><polygon points='4,20 16,24 28,20 16,14' fill='%23f0d79b'/><polygon points='8,18 16,21 24,18 16,13' fill='%239fbf86'/><polygon points='13,15 16,9 19,15' fill='%23e0674e'/></svg>">
+<script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
+</head>
+<body>
+<header class="top">
+  <div class="title"><h1>魂魂的掃街地圖</h1><span class="tag">Hün</span></div>
+  <div class="top-actions">
+    <span id="syncState" class="sync" title="">●</span>
+    <button id="editBtn" class="btn">🔒 編輯</button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="map-wrap">
+    <div id="stage"></div>
+    <div class="labels" id="labels"></div>
+    <div class="map-tools">
+      <button class="btn round" id="nightBtn" title="日 / 夜">🌙</button>
+      <button class="btn round" id="labelToggle" title="顯示名稱">名</button>
+      <button class="btn round" id="resetView" title="回到全景">⟲</button>
+    </div>
+    <div class="legend" id="legend"></div>
+    <div class="loading" id="loading">小島建造中…</div>
+  </section>
+
+  <aside class="side">
+    <div class="card panel" id="panel"><p class="hint">點島上的村里，或用下面搜尋。</p></div>
+
+    <div class="card">
+      <input id="search" class="input" placeholder="🔍 搜尋村里（例：西衛）" autocomplete="off">
+      <ul class="results" id="results"></ul>
+    </div>
+
+    <div class="card stats">
+      <div class="big-row">
+        <div class="big-stat"><div><span id="placeCount">0</span><small>個地方</small></div><label>已去過的社區／地方</label></div>
+        <div class="big-stat sub"><div><span id="sweepCount">0</span><small>次</small></div><label>掃街總次數</label></div>
+      </div>
+      <p class="legacy-note" id="legacyNote"></p>
+      <div class="split" id="teamSplit" title="各組各佔的比例"></div>
+      <h4>各組熱度</h4>
+      <ul class="heat" id="teamStats"></ul>
+      <h4>各鄉鎮熱度</h4>
+      <ul class="heat" id="towns"></ul>
+    </div>
+  </aside>
+</main>
+
+<dialog id="pwDialog" class="dialog">
+  <form method="dialog">
+    <h3>輸入編輯密碼</h3>
+    <input id="pwInput" class="input" type="password" autocomplete="current-password">
+    <p class="err" id="pwErr"></p>
+    <div class="row">
+      <button value="cancel" class="btn ghost" formnovalidate>取消</button>
+      <button value="ok" class="btn primary" id="pwOk">解鎖</button>
+    </div>
+  </form>
+</dialog>
+<div class="toast" id="toast"></div>
+
+<script src="mapdata.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>
