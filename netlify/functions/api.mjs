@@ -1,247 +1,258 @@
-// 地方創生解方島 — 後端 API（Netlify Functions + Netlify Blobs）
-// 資料結構（每筆一個 blob，避免同時寫入互相覆蓋）：
-//   p/<id>            問題（area = t1~t8 主題）
-//   s/<id>            解方
-//   v/<solId>/<user>  一張支持票（只存 key）
-//   u/<user>          線上同學的暱稱與位置（45 秒沒更新就不顯示）
+// 解方島・我的島屋 後端
+// GET  /api/config                          網站文字（所有人）
+// POST /api/login   {name, pin}             回傳這位同學自己的資料（設過密碼就要密碼）
+// POST /api/setpin  {name, pin, newPin}     設定或更改 4 位數密碼
+// POST /api/save    {name, pin, student}    同學存檔（只開放地方、四象限、解方、預算）
+// POST /api/admin   {password, action, ...} 老師後台（需 ADMIN_PASSWORD）
 import { getStore } from "@netlify/blobs";
+import SEEDS from "./seeds.mjs";
 
 export const config = { path: "/api/*" };
 
-const THEMES = ["t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8"]; // 問題的 8 個主題
-const RES = ["ren", "wen", "di", "chan", "jing"]; // 解方用到的人文地產景
-const MAX_PROBLEMS = 500;
-const MAX_SOLUTIONS = 3000;
+const QK = ["num", "itv", "obs", "beh"];
+const CFG_KEYS = ["title", "sub", "welcome", "welcomeSub", "hint", "notFound", "notice"];
+const MAX_STUDENTS = 300;
+const MAX_HISTORY = 40;
+const MAX_FAILS = 5;            // 密碼連續錯幾次就暫停
+const LOCK_MS = 5 * 60 * 1000;  // 暫停 5 分鐘
 
-const res = (data, status = 200) =>
-  new Response(JSON.stringify(data), {
+const json = (o, status = 200) =>
+  new Response(JSON.stringify(o), {
     status,
     headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
   });
+const norm = (s) => String(s || "").replace(/\s/g, "").replace(/臺/g, "台");
+const clip = (s, n) => String(s ?? "").trim().slice(0, n);
+const list = (a, n, len) => (Array.isArray(a) ? a : []).map((x) => clip(x, len)).filter(Boolean).slice(0, n);
+const safeId = (s) => clip(s, 40).replace(/[^\w-]/g, "");
+const validPin = (p) => /^\d{4}$/.test(String(p || ""));
 
-const clip = (v, n) => String(v ?? "").trim().slice(0, n);
-const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-
-function adminPassword() {
-  try {
-    if (globalThis.Netlify?.env?.get) return globalThis.Netlify.env.get("ADMIN_PASSWORD") || "";
-  } catch (e) {}
-  return process.env.ADMIN_PASSWORD || "";
+function cleanQuad(q) {
+  const quad = {};
+  for (const k of QK) quad[k] = list(q && q[k], 40, 600);
+  return quad;
 }
-const isAdmin = (pw) => {
-  const real = adminPassword();
-  return !!real && typeof pw === "string" && pw === real;
-};
-
-// 瀏覽器送來的隨機代號只存在學生自己的裝置；伺服器只保存它的雜湊
-async function hashId(s) {
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("jiefang-island:" + s));
-  return [...new Uint8Array(buf)].slice(0, 12).map((b) => b.toString(16).padStart(2, "0")).join("");
+function cleanTables(ts) {
+  return (Array.isArray(ts) ? ts : []).slice(0, 6).map((t) => ({
+    title: clip(t && t.title, 60),
+    total: clip(t && t.total, 30),
+    rows: (Array.isArray(t && t.rows) ? t.rows : []).slice(0, 60).map((x) => ({
+      item: clip(x && x.item, 100), unit: clip(x && x.unit, 30), qty: clip(x && x.qty, 30),
+      times: clip(x && x.times, 30), sub: clip(x && x.sub, 30),
+    })).filter((x) => x.item || x.unit || x.qty || x.times || x.sub),
+  }));
 }
-
-function makeProblem(body, me, at) {
-  const area = THEMES.includes(body.area) ? body.area : null;
-  const title = clip(body.title, 80);
-  if (!area) return { error: "bad_area" };
-  if (title.length < 4) return { error: "too_short" };
+function cleanStudent(r = {}) {
   return {
-    id: newId() + Math.random().toString(36).slice(2, 5), area, title,
-    no: clip(body.no, 4),
-    place: clip(body.place, 40),
-    desc: clip(body.desc, 400),
-    name: clip(body.name, 20),
-    real: clip(body.real, 30), // 姓名或學號，只有老師看得到
-    author: me, at,
+    order: Number.isFinite(+r.order) ? +r.order : 0,
+    name: clip(r.name, 30),
+    place: clip(r.place, 40),
+    quad: cleanQuad(r.quad),
+    advice: clip(r.advice, 2000),
+    note: clip(r.note, 2000),
+    ideas: list(r.ideas, 20, 1000),
+    tables: cleanTables(r.tables),
+    updatedAt: Number(r.updatedAt) || 0,
+    updatedBy: r.updatedBy === "student" || r.updatedBy === "teacher" ? r.updatedBy : "",
   };
 }
+function cleanConfig(c = {}) {
+  const o = {};
+  for (const k of CFG_KEYS) o[k] = clip(c[k], k === "notice" ? 1000 : 200);
+  return o;
+}
+async function sha(text) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+async function loadAll(store) {
+  const { blobs } = await store.list({ prefix: "s/" });
+  const out = await Promise.all(
+    blobs.map(async (b) => {
+      const data = await store.get(b.key, { type: "json" });
+      return data ? { id: b.key.slice(2), data } : null;
+    })
+  );
+  return out.filter(Boolean).sort((a, b) => (a.data.order || 999) - (b.data.order || 999) || a.id.localeCompare(b.id));
+}
+async function findByName(store, name) {
+  const n = norm(name);
+  if (!n) return { all: [], hit: null };
+  const all = await loadAll(store);
+  return { all, hit: all.find((r) => norm(r.data.name) === n) || null };
+}
+// 存檔前把舊版本放進修改紀錄
+async function pushHistory(store, id, prev, by) {
+  if (!prev) return;
+  const h = (await store.get("h/" + id, { type: "json" })) || [];
+  h.unshift({ at: Date.now(), by, data: prev });
+  await store.setJSON("h/" + id, h.slice(0, MAX_HISTORY));
+}
+function adminPassword() {
+  try { if (typeof Netlify !== "undefined" && Netlify.env) { const v = Netlify.env.get("ADMIN_PASSWORD"); if (v) return v; } } catch {}
+  return process.env.ADMIN_PASSWORD || "";
+}
 
-async function readAll(store, prefix) {
-  const { blobs } = await store.list({ prefix });
-  const items = await Promise.all(blobs.map((b) => store.get(b.key, { type: "json" })));
-  return items.filter(Boolean);
+// 驗證同學的名字與密碼。回傳 {hit} 或 {res: 錯誤回應}
+async function authStudent(store, body, { requirePin }) {
+  const { all, hit } = await findByName(store, body.name);
+  if (!hit) return { res: json({ error: "not_found", empty: all.length === 0 }, 404) };
+  const auth = await store.get("p/" + hit.id, { type: "json" });
+  if (!auth) {
+    if (requirePin) return { res: json({ error: "pin_not_set" }, 403) };
+    return { hit, auth: null };
+  }
+  const fails = (await store.get("f/" + hit.id, { type: "json" })) || { n: 0, until: 0 };
+  if (fails.until > Date.now()) return { res: json({ error: "locked", wait: Math.ceil((fails.until - Date.now()) / 60000) }, 429) };
+  if (!body.pin) return { res: json({ error: "pin_required" }, 401) };
+  if ((await sha(auth.salt + String(body.pin))) !== auth.hash) {
+    const n = fails.n + 1;
+    await store.setJSON("f/" + hit.id, n >= MAX_FAILS ? { n: 0, until: Date.now() + LOCK_MS } : { n, until: 0 });
+    return { res: json({ error: n >= MAX_FAILS ? "locked" : "bad_pin", left: Math.max(0, MAX_FAILS - n), wait: 5 }, n >= MAX_FAILS ? 429 : 401) };
+  }
+  if (fails.n) await store.delete("f/" + hit.id);
+  return { hit, auth };
 }
-async function countPrefix(store, prefix) {
-  const { blobs } = await store.list({ prefix });
-  return blobs.length;
-}
-// 資料版本：問題、解方、按讚有變動時就會不同，前端靠它決定要不要重新讀取
-async function version(store) {
-  const lists = await Promise.all(["p/", "s/", "v/"].map((prefix) => store.list({ prefix })));
-  let h = 2166136261;
-  for (const l of lists) for (const b of l.blobs) for (let i = 0; i < b.key.length; i++) h = Math.imul(h ^ b.key.charCodeAt(i), 16777619);
-  return lists.map((l) => l.blobs.length).join(".") + "." + (h >>> 0).toString(36);
-}
-async function deleteVotes(store, solId) {
-  const { blobs } = await store.list({ prefix: "v/" + solId + "/" });
-  await Promise.all(blobs.map((b) => store.delete(b.key)));
+async function setPin(store, id, pin) {
+  const salt = crypto.randomUUID();
+  await store.setJSON("p/" + id, { salt, hash: await sha(salt + pin), at: Date.now() });
+  await store.delete("f/" + id);
 }
 
 export default async (req) => {
-  const store = getStore({ name: "jiefang-island", consistency: "strong" });
   const route = new URL(req.url).pathname.replace(/^\/api\/?/, "").replace(/\/$/, "");
-  const uid = clip(req.headers.get("x-uid"), 64);
-  const me = uid.length >= 16 ? await hashId(uid) : null;
+  const store = getStore({ name: "jiefang-house", consistency: "strong" });
 
   try {
-    // ---- 讀取整座島 ----
-    if (req.method === "GET" && route === "state") {
-      const [problems, solutions, votes, ver] = await Promise.all([
-        readAll(store, "p/"),
-        readAll(store, "s/"),
-        store.list({ prefix: "v/" }),
-        version(store),
-      ]);
-      const counts = {};
-      const mine = [];
-      for (const b of votes.blobs) {
-        const [, sid, who] = b.key.split("/");
-        counts[sid] = (counts[sid] || 0) + 1;
-        if (me && who === me) mine.push(sid);
-      }
-      const pub = ({ author, real, ...rest }) => ({ ...rest, by: me && author === me ? "me" : "x" });
-      return res({
-        problems: problems.map(pub),
-        solutions: solutions.map(pub),
-        counts,
-        mine,
-        adminEnabled: !!adminPassword(),
-        ver,
+    if (req.method === "GET" && route === "config") {
+      const c = await store.get("config", { type: "json" });
+      return json({ config: c || {} });
+    }
+    if (req.method !== "POST") return json({ error: "method" }, 405);
+    let body = {};
+    try { body = await req.json(); } catch {}
+
+    // ---- 同學登島 ----
+    if (route === "login") {
+      const a = await authStudent(store, body, { requirePin: false });
+      if (a.res) return a.res;
+      return json({ id: a.hit.id, student: a.hit.data, hasPin: !!a.auth });
+    }
+
+    // ---- 設定／更改密碼 ----
+    if (route === "setpin") {
+      if (!validPin(body.newPin)) return json({ error: "bad_new_pin" }, 400);
+      const a = await authStudent(store, body, { requirePin: false });
+      if (a.res) return a.res;
+      await setPin(store, a.hit.id, String(body.newPin));
+      return json({ ok: true });
+    }
+
+    // ---- 同學存檔：老師的欄位與姓名保持不變 ----
+    if (route === "save") {
+      const a = await authStudent(store, body, { requirePin: true });
+      if (a.res) return a.res;
+      const prev = a.hit.data, s = body.student || {};
+      const rec = cleanStudent({
+        ...prev,
+        place: s.place, quad: s.quad, ideas: s.ideas, tables: s.tables,
+        updatedAt: Date.now(), updatedBy: "student",
       });
+      await pushHistory(store, a.hit.id, prev, "student");
+      await store.setJSON("s/" + a.hit.id, rec);
+      return json({ ok: true, id: a.hit.id, student: rec });
     }
 
-    if (req.method !== "POST") return res({ error: "not_found" }, 404);
-    if (!me) return res({ error: "no_uid" }, 400);
-    const body = await req.json().catch(() => ({}));
+    // ---- 老師後台 ----
+    if (route === "admin") {
+      const pw = adminPassword();
+      if (!pw) return json({ error: "no_password" }, 500);
+      if (String(body.password || "") !== pw) return json({ error: "forbidden" }, 403);
+      const action = body.action;
 
-    // ---- 線上同學：回報自己的位置，取得其他人的位置與資料版本 ----
-    if (route === "presence") {
-      const x = Number(body.x), y = Number(body.y), d = Number(body.d) || 0;
-      if (Number.isFinite(x) && Number.isFinite(y)) {
-        await store.setJSON("u/" + me, {
-          k: me.slice(0, 10),
-          name: clip(body.name, 20) || "同學",
-          x: Math.round(x), y: Math.round(y), d: Math.round(d * 100) / 100,
-          at: Date.now(),
-        });
+      if (action === "check") return json({ ok: true });
+      if (action === "list") {
+        const c = await store.get("config", { type: "json" });
+        const all = await loadAll(store);
+        const { blobs } = await store.list({ prefix: "p/" });
+        const pins = new Set(blobs.map((b) => b.key.slice(2)));
+        return json({ students: all.map((r) => ({ ...r, hasPin: pins.has(r.id) })), config: c || {} });
       }
-      const [{ blobs }, ver] = await Promise.all([store.list({ prefix: "u/" }), version(store)]);
-      const now = Date.now();
-      const rows = await Promise.all(
-        blobs.filter((b) => b.key !== "u/" + me).map((b) => store.get(b.key, { type: "json" }).then((v) => [b.key, v]))
-      );
-      const players = [];
-      for (const [key, v] of rows) {
-        if (!v) continue;
-        if (now - v.at < 45000) { if (players.length < 80) players.push({ k: v.k, name: v.name, x: v.x, y: v.y, d: v.d }); }
-        else if (now - v.at > 3600000) store.delete(key).catch(() => {});
-      }
-      return res({ ok: true, players, ver });
-    }
-
-    // ---- 老師登入檢查 ----
-    if (route === "admin") return res({ ok: isAdmin(body.password), enabled: !!adminPassword() });
-
-    // ---- 插一面問題旗 ----
-    if (route === "problem") {
-      const p = makeProblem(body, me, Date.now());
-      if (p.error) return res({ error: p.error }, 400);
-      if ((await countPrefix(store, "p/")) >= MAX_PROBLEMS) return res({ error: "full" }, 409);
-      await store.setJSON("p/" + p.id, p);
-      return res({ ok: true, id: p.id });
-    }
-
-    // ---- 老師批次匯入 ----
-    if (route === "import") {
-      if (!isAdmin(body.password)) return res({ error: "forbidden" }, 403);
-      const items = Array.isArray(body.items) ? body.items.slice(0, 200) : [];
-      const now = Date.now();
-      const list = items.map((it, i) => makeProblem(it, me, now + i));
-      if (!list.length || list.some((p) => p.error)) return res({ error: "bad_area" }, 400);
-      if ((await countPrefix(store, "p/")) + list.length > MAX_PROBLEMS) return res({ error: "full" }, 409);
-      for (const p of list) await store.setJSON("p/" + p.id, p);
-      return res({ ok: true, count: list.length });
-    }
-
-    // ---- 老師：學生解方紀錄（評分用） ----
-    if (route === "roster") {
-      if (!isAdmin(body.password)) return res({ error: "forbidden" }, 403);
-      const [problems, solutions, votes] = await Promise.all([readAll(store, "p/"), readAll(store, "s/"), store.list({ prefix: "v/" })]);
-      const counts = {};
-      for (const b of votes.blobs) { const sid = b.key.split("/")[1]; counts[sid] = (counts[sid] || 0) + 1; }
-      return res({
-        problems: problems.map((p) => ({ id: p.id, no: p.no || "", title: p.title, area: p.area })),
-        solutions: solutions.map((s) => ({
-          id: s.id, problemId: s.problemId, text: s.text, uses: s.uses || [],
-          name: s.name || "", real: s.real || "", ak: String(s.author || "").slice(0, 6),
-          at: s.at, votes: counts[s.id] || 0,
-        })),
-      });
-    }
-
-    // ---- 老師清空整座島 ----
-    if (route === "reset") {
-      if (!isAdmin(body.password)) return res({ error: "forbidden" }, 403);
-      for (const prefix of ["v/", "s/", "p/", "u/"]) {
-        const { blobs } = await store.list({ prefix });
-        for (const b of blobs) await store.delete(b.key);
-      }
-      return res({ ok: true });
-    }
-
-    // ---- 提出解方 ----
-    if (route === "solution") {
-      const pid = clip(body.problemId, 40);
-      const text = clip(body.text, 500);
-      const uses = Array.isArray(body.uses) ? [...new Set(body.uses.filter((u) => RES.includes(u)))] : [];
-      if (!pid || !(await store.get("p/" + pid, { type: "json" }))) return res({ error: "not_found" }, 404);
-      if (text.length < 10) return res({ error: "too_short" }, 400);
-      if (!uses.length) return res({ error: "no_uses" }, 400);
-      if ((await countPrefix(store, "s/")) >= MAX_SOLUTIONS) return res({ error: "full" }, 409);
-      const s = {
-        id: newId(), problemId: pid, text, uses,
-        name: clip(body.name, 20),
-        real: clip(body.real, 30), // 姓名或學號，只有老師看得到
-        author: me, at: Date.now(),
-      };
-      await store.setJSON("s/" + s.id, s);
-      return res({ ok: true, id: s.id });
-    }
-
-    // ---- 按讚 / 取消 ----
-    if (route === "vote") {
-      const sid = clip(body.solId, 40);
-      if (!sid || !(await store.get("s/" + sid, { type: "json" }))) return res({ error: "not_found" }, 404);
-      const key = "v/" + sid + "/" + me;
-      if (body.on) await store.set(key, "1");
-      else await store.delete(key);
-      return res({ ok: true });
-    }
-
-    // ---- 刪除（老師，或作者本人） ----
-    if (route === "delete") {
-      const kind = body.kind === "p" ? "p" : body.kind === "s" ? "s" : null;
-      const id = clip(body.id, 40);
-      if (!kind || !id) return res({ error: "bad_request" }, 400);
-      const item = await store.get(kind + "/" + id, { type: "json" });
-      if (!item) return res({ ok: true });
-      if (!isAdmin(body.password) && item.author !== me) return res({ error: "forbidden" }, 403);
-      if (kind === "s") {
-        await deleteVotes(store, id);
-        await store.delete("s/" + id);
-      } else {
-        const sols = (await readAll(store, "s/")).filter((s) => s.problemId === id);
-        for (const s of sols) {
-          await deleteVotes(store, s.id);
-          await store.delete("s/" + s.id);
+      if (action === "save") {
+        const rec = cleanStudent(body.student);
+        if (!rec.name) return json({ error: "no_name" }, 400);
+        const all = await loadAll(store);
+        let id = safeId(body.id);
+        if (all.some((r) => r.id !== id && norm(r.data.name) === norm(rec.name))) return json({ error: "duplicate" }, 409);
+        const prev = id ? (all.find((r) => r.id === id) || {}).data : null;
+        // 老師打開編輯後，同學又存了檔：不要蓋掉同學的新內容
+        if (prev && !body.force && (prev.updatedAt || 0) > (Number(body.baseUpdatedAt) || 0)) {
+          return json({ error: "conflict", student: prev }, 409);
         }
-        await store.delete("p/" + id);
+        if (!id) {
+          if (all.length >= MAX_STUDENTS) return json({ error: "full" }, 409);
+          id = "s" + Date.now().toString(36);
+          if (!rec.order) rec.order = Math.max(0, ...all.map((r) => r.data.order || 0)) + 1;
+        }
+        rec.updatedAt = Date.now();
+        rec.updatedBy = "teacher";
+        await pushHistory(store, id, prev, "teacher");
+        await store.setJSON("s/" + id, rec);
+        return json({ ok: true, id, student: rec });
       }
-      return res({ ok: true });
+      if (action === "delete") {
+        const id = safeId(body.id);
+        if (!id) return json({ error: "bad_id" }, 400);
+        const prev = await store.get("s/" + id, { type: "json" });
+        await pushHistory(store, id, prev, "teacher");
+        await store.delete("s/" + id);
+        await store.delete("p/" + id);
+        await store.delete("f/" + id);
+        return json({ ok: true });
+      }
+      if (action === "resetpin") {
+        const id = safeId(body.id);
+        await store.delete("p/" + id);
+        await store.delete("f/" + id);
+        return json({ ok: true });
+      }
+      if (action === "history") {
+        const id = safeId(body.id);
+        return json({ history: (await store.get("h/" + id, { type: "json" })) || [] });
+      }
+      if (action === "restore") {
+        const id = safeId(body.id);
+        const h = (await store.get("h/" + id, { type: "json" })) || [];
+        const pick = h.find((x) => x.at === Number(body.at));
+        if (!pick) return json({ error: "not_found" }, 404);
+        const prev = await store.get("s/" + id, { type: "json" });
+        const rec = cleanStudent({ ...pick.data, updatedAt: Date.now(), updatedBy: "teacher" });
+        await pushHistory(store, id, prev, "teacher");
+        await store.setJSON("s/" + id, rec);
+        return json({ ok: true, id, student: rec });
+      }
+      if (action === "config") {
+        const c = cleanConfig(body.config);
+        await store.setJSON("config", c);
+        return json({ ok: true, config: c });
+      }
+      if (action === "seed") {
+        // 只補上還沒有的同學，不覆蓋老師或同學修改過的資料
+        const all = await loadAll(store);
+        const ids = new Set(all.map((r) => r.id)), names = new Set(all.map((r) => norm(r.data.name)));
+        let added = 0;
+        for (const [id, rec] of SEEDS) {
+          if (ids.has(id) || names.has(norm(rec.name))) continue;
+          await store.setJSON("s/" + id, cleanStudent(rec));
+          added++;
+        }
+        return json({ ok: true, added });
+      }
+      return json({ error: "bad_action" }, 400);
     }
-
-    return res({ error: "not_found" }, 404);
-  } catch (e) {
-    console.error(e);
-    return res({ error: "server" }, 500);
+    return json({ error: "not_found" }, 404);
+  } catch (err) {
+    console.error(err);
+    return json({ error: "server" }, 500);
   }
 };
