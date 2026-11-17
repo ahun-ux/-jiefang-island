@@ -1,997 +1,883 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>解方島・我的島屋</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="地方創生課程互動島：在島上走走，挑一面待解的旗子，提出你的解方。">
+<title>地方創生解方島</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
 <style>
-/* 版面：粉彩 low-poly 3D 澎湖小島佔滿畫面；登島卡片置中；登入後右側（手機為底部）展開個人面板；老師後台為全螢幕覆蓋層 */
+/* Layout: 柔和粉彩的 low-poly 3D 島佔滿畫面；白色膠囊按鈕浮在上方；點旗子從右側（手機為底部）拉出解方面板 */
 :root{
-  --sky:#cdeef3; --panel:#ffffff; --ink:#1d4550; --muted:#5d7a80; --line:#dcebe8;
-  --accent:#ff7f5c; --accent-ink:#ffffff; --deep:#1f5866; --sun:#ffc552; --sun-soft:#fff3d6;
-  --leaf:#4a9a5e; --leaf-soft:#e3f3e6; --warn:#c2492f; --warn-soft:#fde7df; --soft:#eef7f6;
-  --display:"Huninn","Noto Sans TC","PingFang TC",sans-serif;
+  --bg:#eef5f1; --panel:#ffffff; --ink:#173a40; --muted:#5b7479; --line:#d7e5e2;
+  --accent:#0e5a63; --accent-ink:#ffffff; --accent-soft:#dcefee; --warn:#c0453a;
+  --sky:#d4eef0; --sol-bg:#fff5e3; --sol-line:#f0d9ad;
+  --c-ren:#d0533f; --c-wen:#8a5bb3; --c-di:#3d8a50; --c-chan:#c08419; --c-jing:#2f86a3;
+  --display:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
   --body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
-  color-scheme:light;
 }
-*{box-sizing:border-box}
-html,body{margin:0;height:100%;overflow:hidden}
-body{background:var(--sky);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.65}
-button,input,textarea{font:inherit;color:inherit}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1c1f; --panel:#172a2e; --ink:#e3efed; --muted:#9cb6b8; --line:#28403f;
+  --accent:#5cc1c4; --accent-ink:#082326; --accent-soft:#1e3a3d; --warn:#ef7b6c; --sky:#d4eef0; --sol-bg:#3a3222; --sol-line:#5c4c2c;
+  --c-ren:#ef8370; --c-wen:#b892dc; --c-di:#71c084; --c-chan:#ecbd4e; --c-jing:#62b9d6; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1c1f; --panel:#172a2e; --ink:#e3efed; --muted:#9cb6b8; --line:#28403f;
+  --accent:#5cc1c4; --accent-ink:#082326; --accent-soft:#1e3a3d; --warn:#ef7b6c; --sky:#d4eef0; --sol-bg:#3a3222; --sol-line:#5c4c2c;
+  --c-ren:#ef8370; --c-wen:#b892dc; --c-di:#71c084; --c-chan:#ecbd4e; --c-jing:#62b9d6; color-scheme:dark}
+html,body{margin:0}
 [hidden]{display:none!important}
-:focus-visible{outline:3px solid var(--deep);outline-offset:2px}
-#scene{position:fixed;inset:0;touch-action:none}
-#scene canvas{display:block}
-.labels{position:fixed;inset:0;pointer-events:none;overflow:hidden}
-.tag{position:absolute;left:0;top:0;transform:translate(-50%,-100%);background:var(--deep);color:#fff;font-weight:700;border-radius:999px;padding:4px 14px;white-space:nowrap;box-shadow:0 4px 14px rgba(20,60,70,.3);font-size:14px}
-.tag small{opacity:.8;font-weight:500;margin-left:6px}
-.brand{position:fixed;left:18px;top:14px;display:flex;flex-direction:column;line-height:1.2;pointer-events:none}
-.brand h1{font-family:var(--display);font-size:34px;margin:0;color:var(--deep);letter-spacing:.06em;text-shadow:0 2px 0 #fff}
-.brand span{font-size:13px;color:var(--deep);opacity:.8;font-weight:700}
-.hud{position:fixed;left:16px;bottom:16px;display:flex;gap:8px}
-.icon{width:42px;height:42px;border-radius:50%;border:none;background:rgba(255,255,255,.95);box-shadow:0 2px 10px rgba(20,60,70,.18);font-size:18px;font-weight:900;cursor:pointer;color:var(--deep)}
-.teacher-btn{position:fixed;right:16px;top:16px;z-index:8;border:2px solid #fff;background:var(--deep);color:#fff;border-radius:999px;padding:9px 18px;font-weight:900;font-size:15px;box-shadow:0 4px 14px rgba(20,60,70,.35);cursor:pointer}
-.teacher-btn:hover{background:#163f4a}
-/* login */
-.gate{position:fixed;left:50%;bottom:7%;transform:translateX(-50%);width:min(400px,calc(100% - 32px));background:rgba(255,255,255,.96);border-radius:26px;padding:26px 26px 22px;box-shadow:0 18px 50px rgba(20,60,70,.25);text-align:center}
-.gate h2{font-family:var(--display);font-size:28px;margin:0 0 4px;color:var(--deep);text-wrap:balance}
-.gate p{margin:0 0 16px;color:var(--muted)}
-.gate form{display:flex;gap:8px}
-.gate input{flex:1;min-width:0;border:2px solid var(--line);border-radius:999px;padding:10px 18px;font-size:17px;background:#fff;text-align:center}
-.gate input:focus{border-color:var(--accent);outline:none}
-.go{border:none;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-weight:900;padding:10px 22px;font-size:17px;cursor:pointer;box-shadow:0 4px 0 #d9603f}
-.go:active{transform:translateY(2px);box-shadow:0 2px 0 #d9603f}
-.go:disabled{opacity:.5;cursor:default}
-.gate .msg{min-height:22px;margin-top:10px;font-size:14px;color:var(--warn)}
-.gate .hint{font-size:12.5px;color:var(--muted);margin-top:4px}
-.waves{display:inline-block;animation:bob 2.4s ease-in-out infinite}
-@keyframes bob{50%{transform:translateY(-4px)}}
-/* panel */
-.panel{position:fixed;top:12px;right:12px;bottom:12px;width:min(440px,calc(100% - 24px));background:var(--panel);border-radius:24px;box-shadow:0 12px 40px rgba(20,60,70,.25);display:flex;flex-direction:column;overflow:hidden;z-index:5}
-.ph{padding:18px 20px 0;background:linear-gradient(180deg,var(--sun-soft),#fff)}
-.ph-top{display:flex;align-items:flex-start;gap:10px}
-.ph .who{flex:1;min-width:0}
-.ph .eb{font-size:12.5px;font-weight:700;color:var(--accent);letter-spacing:.06em}
-.ph h2{font-family:var(--display);font-size:30px;line-height:1.2;margin:2px 0 0;color:var(--deep);text-wrap:balance}
-.ph .nm{color:var(--muted);font-weight:700}
-.leave{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 12px;font-size:13px;cursor:pointer;font-weight:700;color:var(--muted);flex:none}
-.stars{display:flex;align-items:center;gap:8px;margin:12px 0 0;font-size:13px;color:var(--muted)}
-.stars b{font-size:20px;letter-spacing:2px;color:var(--sun)}
-.stars b i{font-style:normal;color:#e3e3dc}
-.tabs{display:flex;gap:4px;margin-top:12px}
-.tabs button{flex:1;border:none;background:transparent;padding:9px 4px;border-radius:12px 12px 0 0;cursor:pointer;font-weight:700;color:var(--muted);font-size:14.5px}
-.tabs button.on{background:#fff;color:var(--deep);box-shadow:0 -2px 0 var(--accent) inset}
-.pb{flex:1;overflow-y:auto;padding:16px 20px 24px;display:flex;flex-direction:column;gap:16px;border-top:1px solid var(--line)}
-.notice{background:var(--deep);color:#fff;border-radius:14px;padding:10px 14px;font-size:14px}
-.notice b{display:block;font-size:12px;opacity:.8;letter-spacing:.06em}
-.h3{font-weight:900;font-size:15px;margin:0 0 8px;color:var(--deep);display:flex;align-items:center;gap:8px}
-.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
-.steps li{display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:center;padding:8px 12px;border-radius:12px;background:var(--soft);font-size:14.5px}
-.steps li .ck{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fff;border:2px dashed #c9dbd8;font-size:14px;color:#9bb}
-.steps li.done{background:var(--leaf-soft)}
-.steps li.done .ck{background:var(--leaf);border:none;color:#fff}
-.steps li small{display:block;color:var(--muted);font-size:12.5px}
-.todo{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
-.todo li{padding:9px 12px 9px 36px;border-radius:12px;background:var(--sun-soft);position:relative;font-size:14.5px}
-.todo li::before{content:"";position:absolute;left:13px;top:15px;width:12px;height:12px;border-radius:3px;border:2px solid #d9a63a}
-.todo li.fix{background:var(--warn-soft)}
-.todo li.fix::before{border-color:var(--warn)}
-.advice{background:var(--sun-soft);border-left:4px solid var(--sun);border-radius:0 14px 14px 0;padding:12px 14px}
-.advice b{display:block;color:#a8741a;font-size:12.5px;letter-spacing:.06em;margin-bottom:2px}
-.advice p{margin:0}
-.quad{display:grid;grid-template-columns:1fr;gap:10px}
-.cell{border:1px solid var(--line);border-radius:14px;padding:10px 14px}
-.cell .ct{display:flex;align-items:baseline;gap:8px;margin-bottom:4px}
-.cell .ct b{font-family:var(--display);font-size:18px;color:var(--deep)}
-.cell .ct small{color:var(--muted)}
-.cell .ct span{margin-left:auto;font-size:12px;color:var(--muted)}
-.cell ol{margin:0;padding-left:1.3em}
-.cell li{margin:3px 0}
-.cell li::marker{color:var(--accent);font-weight:700}
-.cell .empty{color:var(--muted);font-size:13.5px;background:var(--soft);border-radius:10px;padding:8px 10px}
-.ideas{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
-.ideas li{display:flex;gap:10px;background:var(--soft);border-radius:14px;padding:12px 14px;font-size:15.5px}
-.ideas li span{font-family:var(--display);color:var(--accent);font-size:20px;line-height:1.3}
-.tw{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
-.tw .tt{padding:10px 12px 0;font-weight:900;color:var(--deep)}
-table{border-collapse:collapse;width:100%;min-width:380px;font-variant-numeric:tabular-nums;font-size:13.5px}
-th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
-th{color:var(--muted);font-weight:500;font-size:12px;background:var(--soft)}
-td.n,th.n{text-align:right;white-space:nowrap}
-tr.bad td{background:var(--warn-soft)}
-.fixnote{display:block;color:var(--warn);font-size:12px}
-tfoot td{font-weight:900;border-bottom:none}
-.tot{font-family:var(--display);font-size:20px;color:var(--deep)}
-.chk{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.badge{font-size:12.5px;padding:4px 10px;border-radius:10px}
-.badge.ok{background:var(--leaf-soft);color:var(--leaf)}
-.badge.warn{background:var(--warn-soft);color:var(--warn)}
-.none{border:2px dashed var(--line);border-radius:14px;padding:16px;color:var(--muted);text-align:center}
-.toast{position:fixed;left:50%;top:16px;transform:translateX(-50%);background:var(--deep);color:#fff;border-radius:999px;padding:8px 18px;z-index:50;font-size:14px;box-shadow:0 6px 20px rgba(0,0,0,.2);max-width:90%;text-align:center}
-/* teacher */
-.admin{position:fixed;inset:0;background:rgba(20,50,58,.45);z-index:20;display:flex;padding:16px}
-.adm{flex:1;background:#f6faf9;border-radius:22px;display:grid;grid-template-columns:260px 1fr;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3)}
-.adm-side{background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
-.adm-side .top{padding:16px 14px 10px;border-bottom:1px solid var(--line)}
-.adm-side h2{margin:0 0 8px;font-family:var(--display);font-size:22px;color:var(--deep)}
-.adm-side input{width:100%;border:1px solid var(--line);border-radius:10px;padding:7px 10px;background:#f6faf9}
-.slist{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:2px}
-.slist button{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center;text-align:left;border:none;background:transparent;padding:7px 10px;border-radius:10px;cursor:pointer}
-.slist button:hover{background:var(--soft)}
-.slist button.on{background:var(--deep);color:#fff}
-.slist button small{display:block;font-size:12px;opacity:.7}
-.slist .st{font-size:12px;letter-spacing:1px;color:var(--sun)}
-.slist button.on .st{color:#ffe3a1}
-.slist .sec{font-size:12px;color:var(--muted);padding:10px 10px 2px;font-weight:700}
-.adm-side .bot{padding:10px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
-.adm-main{display:flex;flex-direction:column;min-height:0}
-.adm-bar{display:flex;align-items:center;gap:8px;padding:12px 18px;border-bottom:1px solid var(--line);background:#fff;flex-wrap:wrap}
-.adm-bar h3{margin:0;font-size:18px;margin-right:auto;font-family:var(--display);color:var(--deep)}
-.dirty{font-size:12.5px;color:var(--warn);font-weight:700}
-.btn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 14px;cursor:pointer;font-weight:700;font-size:14px}
-.btn:hover{border-color:var(--deep)}
-.btn.pri{background:var(--deep);color:#fff;border-color:var(--deep)}
-.btn.danger{color:var(--warn)}
-.btn.armed{background:var(--warn);color:#fff;border-color:var(--warn)}
-.btn:disabled{opacity:.45;cursor:default}
-.adm-body{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:16px}
-.fset{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
-.fset>h4{margin:0;font-size:15px;color:var(--deep)}
-.frow{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
-label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:700;color:var(--muted)}
-label.f small{font-weight:400}
-label.f input,label.f textarea{border:1px solid var(--line);border-radius:10px;padding:7px 10px;background:#fbfdfd;font-weight:400;color:var(--ink);font-size:14.5px;resize:vertical}
-label.f textarea{min-height:120px;line-height:1.6}
-.bt{border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px;background:#fbfdfd}
-.bt-head{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
-.bt-head label{flex:1;min-width:160px}
-.bt table{min-width:640px}
-.bt td{padding:3px 4px;border-bottom:none}
-.bt td input{width:100%;border:1px solid var(--line);border-radius:8px;padding:5px 7px;background:#fff;font-size:13.5px}
-.bt td.calc{font-size:12px;color:var(--muted);white-space:nowrap;text-align:right}
-.bt td.calc.bad{color:var(--warn);font-weight:700}
-.x{border:none;background:none;color:var(--muted);cursor:pointer;font-size:16px}
-.x:hover{color:var(--warn)}
-.pwgate{position:relative;left:auto;bottom:auto;transform:none;margin:auto}
-.pwrow{display:flex;gap:8px}
-.pwrow input{flex:1;min-width:0;border:2px solid var(--line);border-radius:999px;padding:10px 18px;font-size:16px}
-.panel.wide{width:min(720px,calc(100% - 24px))}
-.tabs button.edit{color:var(--accent)}
-.tabs button.edit.on{color:var(--accent);box-shadow:0 -2px 0 var(--accent) inset}
-.tabs button .udot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--warn);margin-left:4px;vertical-align:2px}
-.pb .fset{background:#fff}
-.savebar{position:sticky;bottom:-24px;margin:0 -20px -24px;padding:12px 20px;background:rgba(255,255,255,.97);border-top:1px solid var(--line);display:flex;align-items:center;gap:10px;flex-wrap:wrap;z-index:2}
-.savebar .st{font-size:13px;color:var(--muted);margin-right:auto}
-.savebar .st.dirty{color:var(--warn);font-weight:700}
-.go.sm{padding:8px 20px;font-size:15px;box-shadow:0 3px 0 #d9603f}
-.edit-hint{font-size:13px;color:var(--muted);background:var(--soft);border-radius:12px;padding:8px 12px}
-.todo-go{margin-top:8px}
-.pinrow{display:flex;gap:8px;margin-top:10px}
-.pinrow input,.pinset input{flex:1;min-width:0;border:2px solid var(--line);border-radius:999px;padding:10px 18px;font-size:20px;letter-spacing:.5em;text-align:center;background:#fff}
-.pinrow input:focus,.pinset input:focus{border-color:var(--accent);outline:none}
-.pinset{display:flex;flex-direction:column;gap:8px}
-.pinset label{font-size:13px;font-weight:700;color:var(--muted);text-align:left}
-.slist small .upd{color:var(--accent);font-weight:700}
-.slist button.on small .upd{color:#ffd3c4}
-.conflict{background:var(--warn-soft);border:1px solid #f3b8a6;border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
-.conflict b{color:var(--warn)}
-.conflict div{display:flex;gap:8px;flex-wrap:wrap}
-.hist{display:flex;flex-direction:column;gap:8px}
-.hist .hi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 14px}
-.hist .hh{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.hist .hh b{font-variant-numeric:tabular-nums}
-.who-tag{font-size:12px;font-weight:700;padding:1px 9px;border-radius:999px;background:var(--soft);color:var(--deep)}
-.who-tag.stu{background:var(--sun-soft);color:#a8741a}
-.hist .hs{font-size:13px;color:var(--muted);margin-right:auto}
-.hist details{margin-top:6px;font-size:13.5px}
-.hist details ul{margin:4px 0;padding-left:1.2em}
-.confetti{position:fixed;inset:0;pointer-events:none;z-index:30;overflow:hidden}
-.confetti i{position:absolute;top:-20px;width:10px;height:14px;border-radius:2px;animation:fall 2.6s ease-in forwards}
-@keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:.6}}
-@media (max-width:760px){
-  .brand h1{font-size:26px}
-  .panel{top:auto;left:8px;right:8px;bottom:8px;width:auto;height:64%;border-radius:22px}
-  .panel.wide{width:auto;height:88%}
-  .gate{bottom:72px}
-  .adm{grid-template-columns:1fr;grid-template-rows:200px 1fr}
-  .adm-side{border-right:none;border-bottom:1px solid var(--line)}
-  .admin{padding:6px}
-  .hud{bottom:auto;top:70px;left:auto;right:12px;flex-direction:column}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.65}
+.app{height:100%;display:flex;flex-direction:column;padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px));padding-block:12px;gap:10px;max-width:1400px;margin:0 auto}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
+.brand{display:flex;flex-direction:column;line-height:1.25;margin-right:auto;min-width:0}
+.brand h1{font-family:var(--display);font-weight:900;font-size:25px;margin:0;letter-spacing:.04em;color:var(--accent)}
+.brand span{font-size:13px;color:var(--muted)}
+.stats{display:flex;gap:6px;flex-wrap:wrap}
+.stat{font-size:13px;padding:3px 12px;border-radius:999px;background:var(--panel);border:1px solid var(--line);font-variant-numeric:tabular-nums;color:var(--muted)}
+.stat b{color:var(--ink);font-size:15px}
+.tbtns{display:flex;gap:6px;flex-wrap:wrap}
+button{font:inherit}
+.btn{cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:6px 14px;border-radius:999px;font-weight:700;font-size:14px;box-shadow:0 1px 3px rgba(20,60,64,.08);transition:background .15s,border-color .15s}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn:focus-visible,.chipbtn:focus-visible,.icon:focus-visible,.fb:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.notice{font-size:13px;padding:7px 14px;border-radius:12px;background:var(--accent-soft);color:var(--ink)}
+.stage{position:relative;flex:1;min-height:380px;border-radius:18px;overflow:hidden;background:var(--sky);box-shadow:inset 0 0 0 1px rgba(14,90,99,.12)}
+#map3d{position:absolute;inset:0}
+.nogl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:24px;color:#173a40}
+.labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.zl{position:absolute;left:0;top:0;transform:translate(-50%,-100%);white-space:nowrap;background:rgba(255,255,255,.94);color:#173a40;border-radius:999px;padding:3px 12px 3px 8px;font-size:14px;font-weight:700;box-shadow:0 2px 8px rgba(20,60,64,.15);display:flex;align-items:center;gap:6px}
+.zl i{width:10px;height:10px;border-radius:50%;flex:none}
+.zl.compact .nm{display:none}
+.zl.compact{padding:3px 8px}
+.fb{position:absolute;left:0;top:0;transform:translate(-50%,-100%);pointer-events:auto;cursor:pointer;border:none;background:#fff;color:#173a40;border-radius:999px;padding:1px 8px;font-size:12px;font-weight:700;box-shadow:0 1px 5px rgba(20,60,64,.2);white-space:nowrap;font-variant-numeric:tabular-nums;border-bottom:3px solid var(--c)}
+.fb.open{background:#fff3f1}
+.fb.sel{background:#173a40;color:#fff}
+.me,.other{position:absolute;left:0;top:0;transform:translate(-50%,-100%);min-width:36px;height:30px;padding:0 12px;border-radius:999px;font-weight:900;font-size:15px;display:flex;align-items:center;justify-content:center;white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis}
+.me{background:#1f5560;color:#fff;box-shadow:0 3px 10px rgba(20,60,64,.3);z-index:2}
+.other{background:rgba(255,255,255,.95);color:#173a40;font-weight:700;font-size:13px;height:26px;box-shadow:0 2px 6px rgba(20,60,64,.18)}
+.hint{position:absolute;left:0;top:0;transform:translate(-50%,-100%);background:#173a40;color:#fff;border-radius:999px;padding:3px 12px;font-size:13px;white-space:nowrap}
+.hud{position:absolute;left:12px;bottom:12px;display:flex;gap:8px;flex-wrap:wrap}
+.icon{cursor:pointer;width:40px;height:40px;border:none;background:rgba(255,255,255,.95);color:#173a40;border-radius:50%;font-size:18px;font-weight:900;box-shadow:0 2px 8px rgba(20,60,64,.18)}
+.legend{position:absolute;right:12px;bottom:12px;background:rgba(255,255,255,.94);color:#173a40;border-radius:14px;padding:8px 12px;font-size:12px;display:flex;flex-direction:column;gap:2px;box-shadow:0 2px 8px rgba(20,60,64,.15)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.tip{position:absolute;left:12px;top:12px;background:rgba(255,255,255,.9);color:#173a40;border-radius:999px;padding:3px 12px;font-size:12px}
+.toast{position:absolute;left:50%;top:12px;transform:translateX(-50%);background:#173a40;color:#fff;padding:6px 16px;border-radius:999px;font-size:14px;pointer-events:none;max-width:90%;text-align:center;z-index:6}
+.panel{position:absolute;top:10px;right:10px;bottom:10px;width:min(420px,calc(100% - 20px));background:var(--panel);color:var(--ink);border-radius:18px;box-shadow:0 8px 30px rgba(20,60,64,.25);display:flex;flex-direction:column;z-index:5;overflow:hidden}
+.panel .ph{display:flex;align-items:flex-start;gap:10px;padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.panel .ph h2{font-size:19px;margin:4px 0 0;line-height:1.4;text-wrap:balance}
+.panel .close{margin-left:auto;flex:none}
+.panel .pb{overflow-y:auto;padding:12px 16px 20px;display:flex;flex-direction:column;gap:14px;min-height:0}
+.area{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:#fff;background:var(--c);padding:1px 10px;border-radius:999px}
+.place{font-size:12px;color:var(--muted);margin-left:6px}
+.desc{margin:0;color:var(--ink)}
+.state{font-size:13px;color:var(--muted);background:var(--accent-soft);border-radius:10px;padding:6px 10px}
+.sol-list{display:flex;flex-direction:column;gap:8px;list-style:none;margin:0;padding:0}
+.sol{background:var(--sol-bg);border:1px solid var(--sol-line);border-radius:12px;padding:10px 12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px}
+.sol .t{overflow-wrap:anywhere;white-space:pre-wrap}
+.sol .meta{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:12px;color:var(--muted)}
+.mini{font-size:11px;font-weight:700;color:#fff;background:var(--c);padding:0 7px;border-radius:999px}
+.vote{align-self:start;cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:2px 10px;font-weight:700;font-variant-numeric:tabular-nums}
+.vote[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.del{cursor:pointer;border:none;background:none;color:var(--muted);font-size:12px;text-decoration:underline;padding:0}
+.form{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:14px;background:var(--bg)}
+.form h3{margin:0;font-size:16px}
+label.lb{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+textarea,input[type=text],input[type=password],select{font:inherit;width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink)}
+textarea{min-height:84px;resize:vertical}
+.uses{display:flex;flex-wrap:wrap;gap:6px}
+.chipbtn{cursor:pointer;border:1.5px solid var(--c);color:var(--c);background:var(--panel);border-radius:999px;padding:2px 11px;font-weight:700;font-size:13px}
+.chipbtn[aria-pressed="true"]{background:var(--c);color:#fff}
+.err{color:var(--warn);font-size:13px;min-height:1em}
+.empty{color:var(--muted);font-size:14px;text-align:center;padding:12px;border:1px dashed var(--line);border-radius:12px}
+.plist{display:flex;flex-direction:column;gap:6px;list-style:none;margin:0;padding:0}
+.plist button{all:unset;cursor:pointer;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center;width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid var(--line);border-radius:12px}
+.plist button:hover{border-color:var(--accent)}
+.plist button:focus-visible{outline:3px solid var(--accent)}
+.plist .n{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.howto ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.copybox{white-space:pre-wrap;font-size:13px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px;max-height:160px;overflow:auto}
+#fw{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:50}
+.cele{position:fixed;left:50%;top:22%;transform:translate(-50%,-50%);z-index:51;pointer-events:none;background:rgba(23,58,64,.92);color:#fff;border-radius:22px;padding:16px 26px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.3);display:flex;flex-direction:column;gap:4px;max-width:min(90vw,520px)}
+.cele b{font-size:clamp(20px,4vw,28px);font-weight:900}
+.cele span{font-size:14px;opacity:.85}
+.cele.show{animation:pop 3.6s ease forwards}
+@keyframes pop{0%{opacity:0;transform:translate(-50%,-40%) scale(.8)}10%{opacity:1;transform:translate(-50%,-50%) scale(1.04)}16%{transform:translate(-50%,-50%) scale(1)}85%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.cele.show{animation:none}}
+.roster{display:flex;flex-direction:column;gap:6px}
+.rs{border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+.rs summary{cursor:pointer;padding:8px 10px;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline}
+.rs summary .muted{font-size:12px}
+.rs .rn{margin-left:auto;font-size:13px;font-variant-numeric:tabular-nums}
+.rs ol{margin:0;padding:0 12px 10px 30px;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.muted{color:var(--muted)}
+@media (max-width:700px){
+  .brand h1{font-size:21px}
+  .panel{top:auto;left:0;right:0;bottom:0;width:100%;height:72%;border-radius:18px 18px 0 0;padding-bottom:env(safe-area-inset-bottom,0px)}
+  .legend,.tip{display:none}
+  .zl{font-size:12px}
 }
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
+
 </head>
 <body>
-<div id="scene" aria-hidden="true"></div>
-<div class="labels" id="labels"></div>
-<div class="brand"><h1 id="siteTitle">解方島</h1><span id="siteSub">地方創生規劃與應用</span></div>
-
-<div class="gate" id="gate">
-  <h2 id="welcome">歡迎登島！</h2>
-  <p id="welcomeSub">輸入你的名字，找到你的島屋。</p>
-  <form id="loginForm" autocomplete="off">
-    <label for="nameIn" hidden>你的名字</label>
-    <input id="nameIn" placeholder="你的名字" maxlength="20">
-    <button class="go" id="goBtn">登島</button>
-  </form>
-  <form id="pinForm" class="pinrow" hidden autocomplete="off">
-    <label for="pinIn" hidden>4 位數密碼</label>
-    <input id="pinIn" type="password" inputmode="numeric" maxlength="4" placeholder="密碼" autocomplete="off">
-    <button class="go">進入</button>
-  </form>
-  <div class="msg" id="loginMsg" role="status"></div>
-  <div class="hint" id="loginHint">只會看到你自己的盤點、解方和預算</div>
-</div>
-
-<aside class="panel" id="panel" hidden>
-  <div class="ph">
-    <div class="ph-top">
-      <div class="who"><div class="eb">我的地方</div><h2 id="pPlace"></h2><div class="nm" id="pName"></div></div>
-      <button class="leave" id="leaveBtn">離開島屋</button>
+<canvas id="fw" hidden aria-hidden="true"></canvas>
+<div id="cele" class="cele" hidden role="status"><b></b><span></span></div>
+<div class="app">
+  <div class="top">
+    <div class="brand"><h1>地方創生解方島</h1><span>8 個主題、40 個地方問題，挑一面待解的旗子提出你的解方</span></div>
+    <div class="stats" aria-live="polite">
+      <span class="stat">待解 <b id="sOpen">0</b></span>
+      <span class="stat">問題 <b id="sProb">0</b></span>
+      <span class="stat">解方 <b id="sSol">0</b></span>
+      <span class="stat">我提出 <b id="sMine">0</b></span>
+      <span class="stat">線上 <b id="sOnline">1</b></span>
     </div>
-    <div class="stars"><span>島屋完成度</span><b id="pStars"></b><span id="pStarsTxt"></span></div>
-    <div class="tabs" role="tablist">
-      <button role="tab" data-tab="home" class="on">我的島屋</button>
-      <button role="tab" data-tab="quad">盤點的問題</button>
-      <button role="tab" data-tab="sol">解方與預算</button>
-      <button role="tab" data-tab="edit" class="edit">填寫作業</button>
+    <div class="tbtns">
+      <button class="btn" id="bMe" aria-label="我的資料">👤 <span id="meName">設定暱稱</span></button>
+      <button class="btn" id="bList">問題清單</button>
+      <button class="btn" id="bHow">怎麼玩</button>
+      <button class="btn" id="bAdd">＋插一面問題旗</button>
+      <button class="btn" id="bAdmin" hidden>老師後台</button>
     </div>
   </div>
-  <div class="pb" id="pBody"></div>
-</aside>
-
-<div class="hud"><button class="icon" id="zin" aria-label="拉近">＋</button><button class="icon" id="zout" aria-label="拉遠">－</button></div>
-<button class="teacher-btn" id="teacherBtn">老師後台</button>
-<div class="admin" id="pinSetBox" hidden><form class="gate pwgate" id="pinSetForm" autocomplete="off"><h2>設定你的島屋密碼</h2><p>第一次登島，請設一組 4 位數密碼。之後要用名字加密碼才能進島屋，別人就改不到你的作業。</p>
-<div class="pinset"><label for="pinNew">4 位數密碼</label><input id="pinNew" type="password" inputmode="numeric" maxlength="4" autocomplete="off"><label for="pinNew2">再輸入一次</label><input id="pinNew2" type="password" inputmode="numeric" maxlength="4" autocomplete="off"><button class="go">設定好了</button></div>
-<div class="msg" id="pinSetMsg" role="status"></div><div class="hint">忘記密碼時，請老師幫你重設。</div></form></div>
-<div class="admin" id="pwBox" hidden><form class="gate pwgate" id="pwForm"><h2>老師登入</h2><p>輸入在 Netlify 設定的老師密碼</p><div class="pwrow"><label for="pwIn" hidden>老師密碼</label><input id="pwIn" type="password" placeholder="老師密碼" autocomplete="current-password"><button class="go">進入</button></div><div class="msg" id="pwMsg" role="status"></div><button type="button" class="btn" id="pwCancel">取消</button></form></div>
-
-<div class="admin" id="admin" hidden>
-  <div class="adm">
-    <div class="adm-side">
-      <div class="top"><h2>老師後台</h2><button class="btn" id="reloadAll" style="margin-bottom:8px">重新整理名單</button><label for="admQ" hidden>搜尋</label><input id="admQ" placeholder="搜尋名字或地點"></div>
-      <div class="slist" id="slist"></div>
-      <div class="bot"><button class="btn" id="seedBtn">放上課堂的同學資料</button><button class="btn" id="addStu">＋ 新增同學</button><button class="btn" id="closeAdm">回到島上</button></div>
+  <div class="notice" id="notice" hidden></div>
+  <div class="stage" id="stage">
+    <div id="map3d" role="img" aria-label="可走動的 3D 島嶼地圖。也可以用「問題清單」按鈕瀏覽所有問題。"></div>
+    <div class="labels" id="labels"></div>
+    <div class="tip">點地面走路・拖曳旋轉・滾輪縮放</div>
+    <div class="hud">
+      <button class="icon" id="zIn" aria-label="放大">＋</button>
+      <button class="icon" id="zOut" aria-label="縮小">－</button>
+      <button class="icon" id="zAll" aria-label="看全島">⛶</button>
+      <button class="icon" id="zRot" aria-label="視角回正（北在上）">⟲</button>
     </div>
-    <div class="adm-main">
-      <div class="adm-bar"><h3 id="edTitle">選一位同學開始編輯</h3><span class="dirty" id="dirty" hidden>尚未儲存</span>
-        <button class="btn" id="preview" hidden>用他的身分預覽</button>
-        <button class="btn" id="histBtn" hidden>修改紀錄</button>
-        <button class="btn" id="pinReset" hidden>重設密碼</button>
-        <button class="btn" id="discard" hidden>放棄修改</button>
-        <button class="btn danger" id="delStu" hidden>刪除</button>
-        <button class="btn pri" id="save" disabled>儲存</button></div>
-      <div class="adm-body" id="edBody"><div class="none">從左邊選一位同學，或按「網站文字」修改登島畫面與公告。</div></div>
+    <div class="legend" aria-hidden="true">
+      <div><i style="background:#e0574a"></i>🚩 紅旗：還沒有解方</div>
+      <div><i style="background:#d9b48a"></i>🔨 鷹架：1–2 個解方</div>
+      <div><i style="background:#ffd86b"></i>🏠 亮燈小屋：3 個以上</div>
     </div>
+    <div class="toast" id="toast" hidden></div>
+    <aside class="panel" id="panel" hidden aria-live="polite">
+      <div class="ph"><div id="pHead" style="min-width:0"></div><button class="btn close" id="pClose">關閉</button></div>
+      <div class="pb" id="pBody"></div>
+    </aside>
   </div>
 </div>
-<div class="toast" id="toast" hidden></div>
-<div class="confetti" id="confetti"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
+(function(){
 "use strict";
+/* ---------- 基本設定 ---------- */
+// 島上的 8 個主題區（問題的分類）
+const AREAS={
+  t1:{ch:"①",name:"① 人口與青年",full:"人口與青年",q:"人口正在改變",color:"#c8423b",css:"#c8423b"},
+  t2:{ch:"②",name:"② 產業與就業",full:"產業與就業",q:"地方如何養活自己",color:"#b8860b",css:"#b8860b"},
+  t3:{ch:"③",name:"③ 觀光與消費",full:"觀光與消費",q:"遊客來了，然後呢？",color:"#2f86a3",css:"#2f86a3"},
+  t4:{ch:"④",name:"④ 生活機能",full:"生活機能",q:"留下來生活容易嗎？",color:"#b04f8f",css:"#b04f8f"},
+  t5:{ch:"⑤",name:"⑤ 社區與公共空間",full:"社區與公共空間",q:"地方還有交流嗎？",color:"#d9692a",css:"#d9692a"},
+  t6:{ch:"⑥",name:"⑥ 文化與地方認同",full:"文化與地方認同",q:"故事會不會消失？",color:"#7a54b0",css:"#7a54b0"},
+  t7:{ch:"⑦",name:"⑦ 環境與永續",full:"環境與永續",q:"地方環境正在改變",color:"#3d8a50",css:"#3d8a50"},
+  t8:{ch:"⑧",name:"⑧ 地方發展與資訊",full:"地方發展與資訊",q:"誰決定地方的未來？",color:"#56677a",css:"#56677a"}
+};
+const AKEYS=Object.keys(AREAS);
+// 解方用到的地方資源（人文地產景）
+const RES={
+  ren:{ch:"人",full:"人力資源",css:"var(--c-ren)"},
+  wen:{ch:"文",full:"文化歷史",css:"var(--c-wen)"},
+  di:{ch:"地",full:"地理環境",css:"var(--c-di)"},
+  chan:{ch:"產",full:"產業經濟",css:"var(--c-chan)"},
+  jing:{ch:"景",full:"景觀空間",css:"var(--c-jing)"}
+};
+const RKEYS=Object.keys(RES);
+function themeKey(s){s=String(s||"").trim();const m={"①":1,"②":2,"③":3,"④":4,"⑤":5,"⑥":6,"⑦":7,"⑧":8}[s]||parseInt(s,10);return m>=1&&m<=8?"t"+m:null}
+// 課堂盤點出的 40 個問題：[主題, 編號, 問題]
+const PRESET=[
+["t1","01","高齡人口比例持續增加，地方逐漸走向超高齡社會。"],
+["t1","02","年輕人離開家鄉工作，只有過年過節才會回來。"],
+["t1","03","年輕人離鄉後在外地定居，不再選擇返鄉生活。"],
+["t1","04","社區活動多由長者參與，年輕世代參與程度偏低。"],
+["t1","05","地方青壯年人口減少，勞動力逐漸不足。"],
+["t1","06","地方兒童人口減少，公共空間越來越少看見小孩。"],
+["t2","07","傳統農業主要依靠高齡農民，缺乏年輕人投入。"],
+["t2","08","農民年紀漸長，無力繼續耕作所有農地。"],
+["t2","09","傳統產業依賴少數高齡工作者，面臨技術與經驗傳承問題。"],
+["t2","10","地方產業受到季節影響，收入集中在特定月份。"],
+["t2","11","地方具有特色農漁產品，但銷售方式仍以傳統交易為主。"],
+["t2","12","地方產業種類相似，店家競爭激烈，部分業者難以維持經營。"],
+["t2","13","地方缺乏多元的工作機會，居民需要前往其他地區就業。"],
+["t3","14","地方活動吸引大量遊客，但活動結束後人潮迅速消失。"],
+["t3","15","遊客只在熱門景點拍照，沒有進一步認識地方。"],
+["t3","16","觀光人潮集中在特定季節，淡季缺乏遊客。"],
+["t3","17","遊客集中在特定時段消費，其他時間商圈冷清。"],
+["t3","18","地方曾經熱門的觀光活動逐漸沒落，相關業者停止營業。"],
+["t3","19","地方特色產品吸引遊客購買，但缺乏深入了解產業的機會。"],
+["t3","20","地方擁有自然景觀與特色資源，但部分景點鮮少有人造訪。"],
+["t3","21","觀光住宿設施逐漸增加，但地方居民是否受益仍不清楚。"],
+["t4","22","地方缺乏日常購物場所，居民需要前往其他地區採買。"],
+["t4","23","地方餐飲選擇有限，居民需要到其他地區用餐。"],
+["t4","24","地方只剩少數雜貨店，傳統商店逐漸消失。"],
+["t4","25","偏遠地區醫療資源不足，高齡居民難以及時獲得醫療照護。"],
+["t4","26","地方大眾運輸使用人數偏少，交通服務與居民需求可能存在落差。"],
+["t4","27","地方部分生活服務集中在特定時段，其他時間缺乏便利性。"],
+["t5","28","社區公共空間平時缺乏人潮，只有舉辦活動時才有人聚集。"],
+["t5","29","地方公共活動主要由長者參與，缺乏跨世代交流。"],
+["t5","30","地方擁有公共設施，但使用者集中於特定族群。"],
+["t5","31","社區傳統聚會場所逐漸失去日常交流功能。"],
+["t5","32","地方公共空間在夜間缺乏活動，街道逐漸冷清。"],
+["t6","33","地方傳統文化活動主要由長者維持，年輕世代參與不足。"],
+["t6","34","地方具有悠久的歷史與信仰文化，但平時缺乏參與者。"],
+["t6","35","地方居民遷移後，原有的文化與生活記憶面臨傳承困難。"],
+["t6","36","地方曾經具有代表性的產業或文化活動逐漸消失。"],
+["t7","37","海岸與公共環境出現垃圾累積，影響環境品質。"],
+["t7","38","地方自然生態與土地利用方式逐漸改變，原因尚不明確。"],
+["t8","39","地方土地開發與商業投資受到未經證實的消息影響。"],
+["t8","40","地方發展逐漸朝向觀光與商業用途，但居民的實際需求尚未被充分了解。"]
+];
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const $=id=>document.getElementById(id);
-const esc=t=>String(t??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const fmt=v=>v==null?"—":Number(v).toLocaleString("en-US");
-const num=s=>{const m=String(s??"").replace(/,/g,"").match(/\d+(\.\d+)?/);return m?Number(m[0]):null};
-const norm=s=>String(s||"").replace(/\s/g,"").replace(/臺/g,"台");
-const clone=o=>JSON.parse(JSON.stringify(o));
-const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-const mergeCfg=c=>{const o={...CFG_DEFAULT};for(const k in (c||{}))if(k in o&&(c[k]||k==="notice"))o[k]=c[k];return o};
-let toastT;function toast(t){const e=$("toast");e.textContent=t;e.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>e.hidden=true,2600)}
+const LS={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 
-const CFG_DEFAULT={title:"解方島",sub:"地方創生規劃與應用",welcome:"歡迎登島！",welcomeSub:"輸入你的名字，找到你的島屋。",hint:"只會看到你自己的盤點、解方和預算",notFound:"島上找不到這個名字。檢查一下有沒有打錯字，或問問老師。",notice:""};
-const QUAD=[["num","數字","發生了什麼？"],["itv","訪談","為什麼？"],["obs","觀察","現場長什麼樣？"],["beh","行為","他們實際怎麼選擇？"]];
-const STEP_INFO=[["選定我的地方","地基"],["盤點填滿兩格以上","牆壁"],["四象限四格都有內容","屋頂"],["提出解方","插上旗子"],["預算核算全部正確","點亮燈火"]];
-
-let STUDENTS={};   // 同學模式：只有自己的資料
-let ALL={};        // 老師後台：全部同學
-let CFG={...CFG_DEFAULT};
-let current=null;  // logged-in student id
-let PW="",previewing=false;
-
-/* ---------- analysis ---------- */
-function analyze(rec){
-  const q=rec.quad||{};
-  const cells=QUAD.filter(([k])=>(q[k]||[]).length).length;
-  const tables=(rec.tables||[]).map(t=>{
-    const rows=(t.rows||[]).map(r=>{
-      const vals=[r.unit,r.qty,r.times].map(num).filter(v=>v!=null);
-      const calc=vals.length?vals.reduce((a,b)=>a*b,1):null;
-      const subN=num(r.sub);
-      return {...r,calc,subN,bad:calc!=null&&subN!=null&&calc!==subN,missing:subN==null};
-    });
-    const sum=rows.reduce((a,r)=>a+(r.subN||0),0);
-    const stated=num(t.total);
-    return {title:t.title||"",rows,sum,stated,shown:stated??sum,badRows:rows.filter(r=>r.bad||r.missing),totalOff:stated!=null&&stated!==sum,noTotal:stated==null};
-  });
-  const hasP=(rec.ideas||[]).length>0;
-  const budgetOk=hasP&&tables.length>0&&tables.every(t=>!t.badRows.length&&!t.totalOff&&!t.noTotal);
-  const steps=[!!(rec.place||"").trim(),cells>=2,cells===4,hasP,budgetOk];
-  const total=tables.reduce((a,t)=>a+t.shown,0);
-  const todo=[];
-  if(!steps[0])todo.push(["先選定你要盤點的地方",""]);
-  QUAD.forEach(([k,t,s])=>{if(!(q[k]||[]).length)todo.push([`補上「${t}」格：${s}`,""])});
-  if(!hasP)todo.push(["根據盤點，提出一個解方",""]);
-  else if(!tables.length)todo.push(["幫解方列出預算表",""]);
-  tables.forEach(t=>{
-    const pre=tables.length>1&&t.title?`（${t.title}）`:"";
-    t.rows.forEach(r=>{
-      if(r.missing)todo.push([`${pre}「${r.item}」的小計還沒填`,"fix"]);
-      else if(r.bad)todo.push([`${pre}重算「${r.item}」：單價 × 數量 × 次數 = ${fmt(r.calc)}，表上寫 ${fmt(r.subN)}`,"fix"]);
-    });
-    if(t.noTotal)todo.push([`${pre}填上預算合計（各項加起來是 ${fmt(t.sum)} 元）`,"fix"]);
-    else if(t.totalOff)todo.push([`${pre}合計寫 ${fmt(t.stated)} 元，但各項小計加起來是 ${fmt(t.sum)} 元`,"fix"]);
-  });
-  return {cells,tables,hasP,budgetOk,steps,done:steps.filter(Boolean).length,total,todo};
-}
-
-/* ---------- 3D island ---------- */
-const T=window.THREE;
-let renderer,scene,camera,clock,water,waterBase;
-const anim=[];            // per-frame callbacks
-const plots=[];           // {pos,angle,deco}
-let myHouse=null,myPlot=null,fwTimer=0;
-const camS={theta:.7,phi:1.0,dist:58,tx:0,ty:0,tz:0};
-const camG={...camS};
-let idleSpin=true;
-function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
-const R=rng(20261110);
-const MATS={};
-function mat(c,opt){const k=c+JSON.stringify(opt||{});return MATS[k]||(MATS[k]=new T.MeshStandardMaterial(Object.assign({color:c,flatShading:true,roughness:.95,metalness:0},opt||{})))}
-function jitter(g,amt,keepY){
-  const p=g.attributes.position,map={};
-  for(let i=0;i<p.count;i++){
-    const x=p.getX(i),y=p.getY(i),z=p.getZ(i),key=[x,y,z].map(v=>v.toFixed(3)).join();
-    if(!map[key])map[key]=[(R()-.5)*amt,keepY?0:(R()-.5)*amt,(R()-.5)*amt];
-    const d=map[key];p.setXYZ(i,x+d[0],y+d[1],z+d[2]);
-  }
-  g.computeVertexNormals();return g;
-}
-function mesh(g,c,x=0,y=0,z=0,opt){const m=new T.Mesh(g,mat(c,opt));m.position.set(x,y,z);return m}
-
-function initScene(){
-  if(!T){$("scene").innerHTML='<div style="padding:90px 20px;text-align:center;color:#1d4550">島嶼畫面載入失敗，請重新整理。</div>';return}
-  const host=$("scene");
-  renderer=new T.WebGLRenderer({antialias:true});
-  renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));
-  host.appendChild(renderer.domElement);
-  scene=new T.Scene();
-  scene.background=new T.Color("#cdeef3");
-  scene.fog=new T.Fog("#cdeef3",90,190);
-  camera=new T.PerspectiveCamera(42,1,.1,400);
-  clock=new T.Clock();
-  scene.add(new T.HemisphereLight("#ffffff","#6fae9f",.5));
-  const sun=new T.DirectionalLight("#fff1d6",.7);sun.position.set(30,45,18);scene.add(sun);
-  
-  buildWater();buildIsland();buildDecor();
-  resize();window.addEventListener("resize",resize);
-  bindControls();
-  renderer.setAnimationLoop(tick);
-}
-function buildWater(){
-  const g=new T.PlaneGeometry(260,260,52,52);g.rotateX(-Math.PI/2);
-  water=mesh(g,"#4fb0c6",0,-.2,0,{roughness:.6});scene.add(water);
-  waterBase=Float32Array.from(g.attributes.position.array);
-}
-function buildIsland(){
-  scene.add(mesh(jitter(new T.CylinderGeometry(17.5,19.5,2.4,14,2),.8,true),"#e9cf98",0,-.4,0));
-  scene.add(mesh(jitter(new T.CylinderGeometry(15,16.2,1.2,14,1),.7,true),"#8cc66a",0,1.2,0));
-  // hills
-  [[0,0,4.6,2.2],[-2.6,1.8,3,1.6],[2.4,-2,2.6,1.3]].forEach(([x,z,r,h])=>{
-    const g=jitter(new T.DodecahedronGeometry(r,0),.5);g.scale(1,h/r,1);
-    scene.add(mesh(g,"#86c46a",x,1.8,z));
-  });
-}
-function palm(x,z,s=1){
-  const g=new T.Group();
-  const trunk=mesh(new T.CylinderGeometry(.12*s,.2*s,2.6*s,5),"#b88a5a",0,1.3*s,0);trunk.rotation.z=.12;g.add(trunk);
-  for(let i=0;i<6;i++){
-    const pv=new T.Group();pv.position.set(.25*s,2.55*s,0);pv.rotation.y=i*Math.PI/3;
-    const l2=mesh(new T.ConeGeometry(.32*s,1.9*s,3),i%2?"#4f9d57":"#62b064");l2.geometry.translate(0,.95*s,0);l2.rotation.z=-Math.PI/2.5;pv.add(l2);g.add(pv);
-  }
-  g.position.set(x,1.7,z);g.rotation.y=R()*6;scene.add(g);return g;
-}
-function tree(x,z,s=1,c="#5daa5f"){
-  const g=new T.Group();
-  g.add(mesh(new T.CylinderGeometry(.1*s,.14*s,.8*s,5),"#9a7048",0,.4*s,0));
-  g.add(mesh(jitter(new T.IcosahedronGeometry(.75*s,0),.15),c,0,1.25*s,0));
-  g.position.set(x,1.75,z);scene.add(g);return g;
-}
-const PASTEL=["#ffd7c2","#ffe9a8","#cfe8ff","#d9f2d0","#f7d1e6","#fff2e0","#d6e0ff"];
-const ROOF=["#ff8a65","#3e8fa3","#f2b134","#e26d5a","#5aa874","#7c86c9"];
-function decoHouse(){
-  const g=new T.Group(),w=1.6+R()*.6,h=1.1+R()*.5,d=1.5+R()*.4;
-  g.add(mesh(new T.BoxGeometry(w,h,d),PASTEL[Math.floor(R()*PASTEL.length)],0,h/2,0));
-  const roof=mesh(new T.ConeGeometry(Math.max(w,d)*.78,1.0,4),ROOF[Math.floor(R()*ROOF.length)],0,h+.5,0);roof.rotation.y=Math.PI/4;g.add(roof);
-  g.add(mesh(new T.BoxGeometry(.38,.62,.05),"#7a5a3c",0,.31,d/2+.01));
-  [-1,1].forEach(sx=>g.add(mesh(new T.BoxGeometry(.3,.3,.05),"#7fb6c9",sx*w*.3,h*.62,d/2+.01)));
-  return g;
-}
-function buildDecor(){
-  // plots for houses: two rings
-  const N=24;
-  for(let i=0;i<N;i++){
-    const ring=i%2?10.6:7.4,a=i/N*Math.PI*2+(i%2?.13:0);
-    const pos=new T.Vector3(Math.sin(a)*ring,1.8,Math.cos(a)*ring);
-    const deco=decoHouse();deco.position.copy(pos);deco.rotation.y=a+(R()-.5)*.3;scene.add(deco);
-    plots.push({pos,angle:a,deco});
-  }
-  // palms & trees near shore
-  for(let i=0;i<16;i++){const a=i/16*Math.PI*2+.1,r=13.2+R()*.8;palm(Math.sin(a)*r,Math.cos(a)*r,.8+R()*.4)}
-  for(let i=0;i<12;i++){const a=i/12*Math.PI*2+.25,r=4.8+R()*1.2;tree(Math.sin(a)*r,Math.cos(a)*r,.8+R()*.4,R()>.5?"#5daa5f":"#7cbf5a")}
-  // basalt columns (玄武岩)
-  const bas=new T.Group();
-  for(let i=0;i<22;i++){const r=Math.sqrt(R())*1.8,a=R()*6.28,h=1+R()*2.4;bas.add(mesh(new T.CylinderGeometry(.42,.42,h,6),i%3?"#59616a":"#4a525a",Math.sin(a)*r,h/2,Math.cos(a)*r))}
-  const ba=2.0;bas.position.set(Math.sin(ba)*15.2,.4,Math.cos(ba)*15.2);scene.add(bas);
-  // lighthouse
-  const lh=new T.Group();
-  [0,1,2,3].forEach(i=>lh.add(mesh(new T.CylinderGeometry(.62-i*.07,.68-i*.07,.9,8),i%2?"#e8553f":"#ffffff",0,.45+i*.9,0)));
-  lh.add(mesh(new T.CylinderGeometry(.5,.5,.6,8),"#fff6c8",0,3.9,0,{emissive:"#ffd76a",emissiveIntensity:.6}));
-  lh.add(mesh(new T.ConeGeometry(.65,.7,8),"#e8553f",0,4.55,0));
-  const la=4.2;lh.position.set(Math.sin(la)*13.6,1.7,Math.cos(la)*13.6);scene.add(lh);
-  const beam=mesh(new T.ConeGeometry(.9,7,12,1,true),"#fff3b0",0,0,0,{transparent:true,opacity:.18,emissive:"#fff3b0",side:T.DoubleSide});
-  beam.geometry.translate(0,-3.5,0);beam.rotation.z=Math.PI/2;const bp=new T.Group();bp.position.set(0,3.9,0);bp.add(beam);lh.add(bp);
-  anim.push(t=>bp.rotation.y=t*.8);
-  // windmills
-  [[5.6,12.6],[5.95,12.9]].forEach(([a,r],k)=>{
-    const g=new T.Group();g.add(mesh(new T.CylinderGeometry(.1,.18,5,6),"#f7f7f2",0,2.5,0));
-    const hub=new T.Group();hub.position.set(0,5,.2);
-    for(let i=0;i<3;i++){const b=mesh(new T.BoxGeometry(.14,2.2,.04),"#ffffff");b.geometry.translate(0,1.1,0);b.rotation.z=i*Math.PI*2/3;hub.add(b)}
-    hub.add(mesh(new T.SphereGeometry(.18,6,4),"#e9e9e2"));g.add(hub);g.position.set(Math.sin(a)*r,1.7,Math.cos(a)*r);g.rotation.y=a;scene.add(g);
-    anim.push(t=>hub.rotation.z=t*(1.4+k*.3));
-  });
-  // 雙心石滬 double-heart stone weir
-  const weir=new T.Group();
-  [1,.62].forEach(s=>{
-    for(let i=0;i<64;i++){
-      const u=i/64*Math.PI*2,x=16*Math.pow(Math.sin(u),3),y=13*Math.cos(u)-5*Math.cos(2*u)-2*Math.cos(3*u)-Math.cos(4*u);
-      weir.add(mesh(new T.BoxGeometry(.38,.32,.38),"#6f6a63",x*.17*s,0,-y*.17*s));
-    }
-  });
-  const wa=.55;weir.position.set(Math.sin(wa)*23.5,-.05,Math.cos(wa)*23.5);weir.rotation.y=wa+Math.PI;scene.add(weir);
-  // boats
-  for(let k=0;k<3;k++){
-    const b=new T.Group();
-    const hull=mesh(new T.BoxGeometry(2,.5,.8),["#ffffff","#ffd56a","#ff9a7a"][k],0,.25,0);b.add(hull);
-    b.add(mesh(new T.BoxGeometry(.7,.5,.6),"#3e8fa3",-.3,.75,0));
-    const sail=new T.Mesh(new T.ConeGeometry(.7,1.8,3),mat("#fffaf0"));sail.position.set(.4,1.2,0);sail.scale.z=.15;b.add(sail);
-    scene.add(b);const r=27+k*5,sp=.04+k*.015,off=k*2.1;
-    anim.push(t=>{const a=t*sp+off;b.position.set(Math.sin(a)*r,Math.sin(t*1.6+k)*.15,Math.cos(a)*r);b.rotation.y=a+Math.PI;b.rotation.x=Math.sin(t*1.3+k)*.05});
-  }
-  // clouds
-  for(let k=0;k<7;k++){
-    const c=new T.Group();
-    for(let i=0;i<4;i++)c.add(mesh(new T.IcosahedronGeometry(1.1+R()*.9,0),"#ffffff",i*1.3-2,R()*.5,(R()-.5)*1.2));
-    const r=42+R()*26,a0=R()*6.28,y=10+R()*6,sp=.006+R()*.01;scene.add(c);
-    anim.push(t=>{const a=a0+t*sp;c.position.set(Math.sin(a)*r,y,Math.cos(a)*r)});
-  }
-  // gulls
-  for(let k=0;k<4;k++){
-    const g=new T.Group();
-    [-1,1].forEach(s=>{const w=mesh(new T.BoxGeometry(.9,.04,.25),"#ffffff");w.position.x=s*.45;w.rotation.z=s*.35;g.add(w)});
-    scene.add(g);const r=10+k*3,h=9+k;
-    anim.push(t=>{const a=t*(.25+k*.04)+k*1.7;g.position.set(Math.sin(a)*r,h+Math.sin(t*2+k)*.4,Math.cos(a)*r);g.rotation.y=a+Math.PI/2;g.children.forEach((w,i)=>w.rotation.z=(i?1:-1)*(.2+Math.sin(t*8+k)*.35))});
-  }
-}
-/* my house, built from progress */
-function buildMyHouse(a){
-  const g=new T.Group();
-  const st=a.steps;
-  // glowing ring
-  const ring=mesh(new T.RingGeometry(1.9,2.3,24),"#ffc552",0,.03,0,{emissive:"#ffb02e",emissiveIntensity:.8,side:T.DoubleSide});
-  ring.rotation.x=-Math.PI/2;g.add(ring);
-  g.userData.tick=t=>{ring.material.emissiveIntensity=.5+Math.sin(t*3)*.4};
-  // sign
-  const sign=new T.Group();sign.add(mesh(new T.BoxGeometry(.08,1,.08),"#8b6a46",0,.5,0));sign.add(mesh(new T.BoxGeometry(.8,.45,.06),"#fff6dc",0,1,0));
-  sign.position.set(1.5,0,1.5);g.add(sign);
-  if(st[0])g.add(mesh(new T.BoxGeometry(2.6,.28,2.4),"#c9c2b4",0,.14,0));
-  else{for(let i=0;i<10;i++){const u=i/10*6.28;g.add(mesh(new T.BoxGeometry(.25,.18,.25),"#b9b1a3",Math.sin(u)*1.2,.09,Math.cos(u)*1.2))}}
-  if(st[1]){
-    g.add(mesh(new T.BoxGeometry(2.1,1.5,1.9),"#fff2df",0,1.03,0));
-    g.add(mesh(new T.BoxGeometry(.45,.75,.05),"#8a5d3b",0,.66,.96));
-    const lit=st[4];
-    [-.62,.62].forEach(x=>g.add(mesh(new T.BoxGeometry(.38,.38,.05),lit?"#ffe18a":"#7fb6c9",x,1.15,.96,lit?{emissive:"#ffc23d",emissiveIntensity:1}:undefined)));
-    if(lit){const pl=new T.PointLight("#ffcf6b",1.2,7);pl.position.set(0,1.4,1.6);g.add(pl)}
-  }else if(st[0]){
-    // scaffolding
-    [[-1,-.9],[1,-.9],[-1,.9],[1,.9]].forEach(([x,z])=>g.add(mesh(new T.BoxGeometry(.08,1.6,.08),"#d39a52",x,1.08,z)));
-    g.add(mesh(new T.BoxGeometry(2.1,.08,.08),"#d39a52",0,1.6,.9));
-  }
-  if(st[2]){const roof=mesh(new T.ConeGeometry(1.75,1.2,4),"#ff7f5c",0,2.38,0);roof.rotation.y=Math.PI/4;g.add(roof);g.add(mesh(new T.BoxGeometry(.28,.6,.28),"#c45a3e",.6,2.6,-.3))}
-  if(st[3]){
-    const fp=new T.Group();fp.add(mesh(new T.CylinderGeometry(.04,.04,2.6,5),"#ffffff",0,1.3,0));
-    const flag=new T.Mesh(new T.PlaneGeometry(1,.6,6,1),mat("#ff7f5c",{side:T.DoubleSide}));flag.position.set(.5,2.3,0);fp.add(flag);
-    const fb=Float32Array.from(flag.geometry.attributes.position.array);
-    const prev=g.userData.tick;g.userData.tick=t=>{prev(t);const p=flag.geometry.attributes.position;for(let i=0;i<p.count;i++){const x=fb[i*3];p.setZ(i,Math.sin(t*5+x*4)*.12*(x+.5))}p.needsUpdate=true};
-    fp.position.set(-1.5,0,1.2);g.add(fp);
-    const t1=new T.Group();t1.add(mesh(new T.CylinderGeometry(.08,.1,.6,5),"#9a7048",0,.3,0));t1.add(mesh(jitter(new T.IcosahedronGeometry(.5,0),.1),"#5daa5f",0,.9,0));t1.position.set(1.6,0,-1);g.add(t1);
-  }
-  return g;
-}
-function placeMyHouse(id){
-  removeMyHouse();
-  const rec=STUDENTS[id];if(!rec||!scene)return;
-  const idx=Math.max(0,(rec.order||Object.keys(STUDENTS).sort().indexOf(id)+1)-1)%plots.length;
-  myPlot=plots[idx];myPlot.deco.visible=false;
-  myHouse=buildMyHouse(analyze(rec));myHouse.position.copy(myPlot.pos);myHouse.rotation.y=myPlot.angle;myHouse.scale.setScalar(1.35);scene.add(myHouse);
-}
-function removeMyHouse(){if(myHouse){scene.remove(myHouse);myHouse=null}if(myPlot){myPlot.deco.visible=true;myPlot=null}}
-/* fireworks */
-const fws=[];
-function firework(pos,color){
-  const n=70,g=new T.BufferGeometry(),p=new Float32Array(n*3),v=[];
-  for(let i=0;i<n;i++){p[i*3]=pos.x;p[i*3+1]=pos.y;p[i*3+2]=pos.z;const th=R()*6.28,ph=Math.acos(2*R()-1),s=3+R()*2;v.push([Math.sin(ph)*Math.cos(th)*s,Math.cos(ph)*s,Math.sin(ph)*Math.sin(th)*s])}
-  g.setAttribute("position",new T.BufferAttribute(p,3));
-  const m=new T.PointsMaterial({color,size:.32,transparent:true,opacity:1,depthWrite:false});
-  const pts=new T.Points(g,m);scene.add(pts);fws.push({pts,v,life:0});
-}
-function stepFireworks(dt){
-  for(let k=fws.length-1;k>=0;k--){const f=fws[k];f.life+=dt;const p=f.pts.geometry.attributes.position;
-    for(let i=0;i<f.v.length;i++){f.v[i][1]-=4*dt;p.array[i*3]+=f.v[i][0]*dt;p.array[i*3+1]+=f.v[i][1]*dt;p.array[i*3+2]+=f.v[i][2]*dt}
-    p.needsUpdate=true;f.pts.material.opacity=Math.max(0,1-f.life/1.6);
-    if(f.life>1.6){scene.remove(f.pts);f.pts.geometry.dispose();f.pts.material.dispose();fws.splice(k,1)}}
-}
-function celebrate(){
-  if(!myPlot||!scene)return;
-  const cols=["#ff7f5c","#ffc552","#5cc1c4","#ffffff","#ff9ad1"];
-  for(let i=0;i<3;i++)setTimeout(()=>{const p=myPlot.pos.clone();p.y+=6+R()*2;p.x+=(R()-.5)*3;p.z+=(R()-.5)*3;firework(p,cols[(R()*cols.length)|0])},i*350);
-}
-function confetti(){
-  const box=$("confetti");const cols=["#ff7f5c","#ffc552","#5cc1c4","#7cbf5a","#ff9ad1"];
-  for(let i=0;i<70;i++){const e=document.createElement("i");e.style.left=Math.random()*100+"%";e.style.background=cols[i%cols.length];e.style.animationDelay=Math.random()*.8+"s";e.style.transform=`rotate(${Math.random()*360}deg)`;box.appendChild(e)}
-  setTimeout(()=>box.innerHTML="",3800);
-}
-/* camera & controls */
-function landingView(){camG.theta=camS.theta;camG.phi=1.0;camG.dist=innerWidth<760?74:58;camG.tx=0;camG.ty=0;camG.tz=0;idleSpin=true}
-function focusPlot(){
-  if(!myPlot)return;idleSpin=false;
-  camG.tx=myPlot.pos.x;camG.ty=myPlot.pos.y+.8;camG.tz=myPlot.pos.z;camG.dist=innerWidth<760?30:17;camG.phi=1.08;
-  let th=myPlot.angle;while(th-camS.theta>Math.PI)th-=Math.PI*2;while(th-camS.theta<-Math.PI)th+=Math.PI*2;camG.theta=th;
-}
-function applyOffset(){
-  if(!camera)return;const w=innerWidth,h=innerHeight;
-  if(current&&!$("panel").hidden){
-    if(w>=760)camera.setViewOffset(w,h,Math.min($("panel").classList.contains("wide")?740:460,w*.6)/2,0,w,h);
-    else camera.setViewOffset(w,h,0,h*($("panel").classList.contains("wide")?.88:.64)/2-20,w,h);
-  }else camera.clearViewOffset();
-}
-function resize(){if(!renderer)return;renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();applyOffset();if(!current)landingView()}
-function bindControls(){
-  const el=renderer.domElement,pts=new Map();let pinch=0;
-  el.addEventListener("pointerdown",e=>{pts.set(e.pointerId,[e.clientX,e.clientY]);el.setPointerCapture(e.pointerId)});
-  el.addEventListener("pointermove",e=>{
-    if(!pts.has(e.pointerId))return;const [x0,y0]=pts.get(e.pointerId);pts.set(e.pointerId,[e.clientX,e.clientY]);
-    if(pts.size===1){camG.theta-=(e.clientX-x0)*.006;camG.phi=Math.min(1.35,Math.max(.45,camG.phi-(e.clientY-y0)*.004));idleSpin=false}
-    else if(pts.size===2){const [a,b]=[...pts.values()];const d=Math.hypot(a[0]-b[0],a[1]-b[1]);if(pinch)zoom((pinch-d)*.08);pinch=d}
-  });
-  const up=e=>{pts.delete(e.pointerId);if(pts.size<2)pinch=0};
-  el.addEventListener("pointerup",up);el.addEventListener("pointercancel",up);
-  el.addEventListener("wheel",e=>{e.preventDefault();zoom(e.deltaY*.03)},{passive:false});
-  $("zin").onclick=()=>zoom(-6);$("zout").onclick=()=>zoom(6);
-}
-function zoom(d){camG.dist=Math.min(95,Math.max(10,camG.dist+d))}
-const tagEl=document.createElement("div");tagEl.className="tag";tagEl.hidden=true;$("labels").appendChild(tagEl);
-function tick(){
-  const dt=Math.min(.05,clock.getDelta()),t=clock.elapsedTime;
-  if(idleSpin)camG.theta+=dt*.05;
-  const k=1-Math.pow(.04,dt);
-  for(const key in camS)camS[key]+=(camG[key]-camS[key])*k;
-  const sp=Math.sin(camS.phi);
-  camera.position.set(camS.tx+camS.dist*sp*Math.sin(camS.theta),camS.ty+camS.dist*Math.cos(camS.phi),camS.tz+camS.dist*sp*Math.cos(camS.theta));
-  camera.lookAt(camS.tx,camS.ty,camS.tz);
-  const p=water.geometry.attributes.position;
-  for(let i=0;i<p.count;i++){const x=waterBase[i*3],z=waterBase[i*3+2];p.array[i*3+1]=Math.sin(x*.16+t*1.1)*.22+Math.cos(z*.2+t*1.4)*.18}
-  p.needsUpdate=true;water.geometry.computeVertexNormals();
-  anim.forEach(f=>f(t));
-  if(myHouse&&myHouse.userData.tick)myHouse.userData.tick(t);
-  if(myHouse&&current&&analyze(STUDENTS[current]||{}).budgetOk){fwTimer-=dt;if(fwTimer<=0){fwTimer=3.2;const q=myPlot.pos.clone();q.y+=7;q.x+=(R()-.5)*4;firework(q,["#ffc552","#ff7f5c","#5cc1c4"][(R()*3)|0])}}
-  stepFireworks(dt);
-  if(myHouse&&current){const v=myPlot.pos.clone();v.y+=4.2;v.project(camera);
-    if(v.z<1){tagEl.hidden=false;tagEl.style.transform=`translate(${(v.x*.5+.5)*innerWidth}px,${(-v.y*.5+.5)*innerHeight}px) translate(-50%,-100%)`}else tagEl.hidden=true}
-  else tagEl.hidden=true;
-  renderer.render(scene,camera);
-}
-
-/* ---------- student panel ---------- */
-let tab="home";
-let MYPIN="",draft=null,sDirty=false,sSaving=false;
-const draftKey=()=>"jfd_draft_"+current;
-function renderPanel(){
-  const rec=STUDENTS[current];if(!rec){logout();return}
-  const a=analyze(rec);
-  $("pPlace").textContent=rec.place||"還沒選定地方";
-  $("pName").textContent=rec.name;
-  $("pStars").innerHTML="★".repeat(a.done)+"<i>"+"★".repeat(5-a.done)+"</i>";
-  $("pStarsTxt").textContent=`${a.done} / 5`;
-  tagEl.innerHTML=`${esc(rec.name)}的島屋<small>${esc(rec.place||"")}</small>`;
-  document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("on",b.dataset.tab===tab));
-  $("panel").classList.toggle("wide",tab==="edit");applyOffset();
-  const eb=document.querySelector('.tabs button[data-tab="edit"]');eb.innerHTML="填寫作業"+(sDirty?'<i class="udot" title="尚未儲存"></i>':"");eb.hidden=previewing;
-  if(tab==="edit"){renderEdit();return}
-  let h="";
-  if(tab==="home"){
-    if(CFG.notice)h+=`<div class="notice"><b>老師的公告</b>${esc(CFG.notice)}</div>`;
-    if(rec.note)h+=`<div class="advice"><b>老師給你的話</b><p>${esc(rec.note)}</p></div>`;
-    h+=`<div><div class="h3">島屋怎麼蓋起來</div><ol class="steps">${STEP_INFO.map(([t,piece],i)=>`<li class="${a.steps[i]?"done":""}"><span class="ck">${a.steps[i]?"✓":i+1}</span><span>${t}<small>完成就會${piece}</small></span></li>`).join("")}</ol></div>`;
-    h+=`<div><div class="h3">接下來的任務</div>${a.todo.length?`<ul class="todo">${a.todo.map(([t,c])=>`<li class="${c}">${esc(t)}</li>`).join("")}</ul>${previewing?"":`<div class="todo-go"><button class="go sm" data-goedit="1">去填寫作業</button></div>`}`:`<div class="none">任務全部完成，島屋燈火通明！</div>`}</div>`;
-    if(rec.advice)h+=`<div class="advice"><b>老師的下一步建議</b><p>${esc(rec.advice)}</p></div>`;
-  }else if(tab==="quad"){
-    h+=`<div class="quad">${QUAD.map(([k,t,s])=>{const arr=(rec.quad||{})[k]||[];return `<div class="cell"><div class="ct"><b>${t}</b><small>${s}</small><span>${arr.length} 筆</span></div>${arr.length?`<ol>${arr.map(x=>`<li>${esc(x)}</li>`).join("")}</ol>`:`<div class="empty">還沒填。空下來的格子，就是接下來幾週的功課。</div>`}</div>`}).join("")}</div>`;
-    if(rec.advice)h+=`<div class="advice"><b>老師的下一步建議</b><p>${esc(rec.advice)}</p></div>`;
-  }else{
-    h+=`<div><div class="h3">我提出的解方</div>${a.hasP?`<ul class="ideas">${rec.ideas.map((x,i)=>`<li><span>${i+1}</span><div>${esc(x)}</div></li>`).join("")}</ul>`:`<div class="none">還沒提出解方。從盤點裡最有把握的一格出發，想一個能回應它的做法。</div>`}</div>`;
-    if(a.tables.length){
-      h+=`<div><div class="h3">所需預算${a.tables.length>1?`<span style="font-weight:500;color:var(--muted)">・合計 ${fmt(a.total)} 元</span>`:""}</div>`;
-      a.tables.forEach(t=>{
-        h+=`<div class="tw">${t.title?`<div class="tt">${esc(t.title)}</div>`:""}<table><thead><tr><th>項目</th><th class="n">單價</th><th class="n">數量</th><th class="n">次數</th><th class="n">小計</th></tr></thead><tbody>${t.rows.map(r=>`<tr class="${r.bad||r.missing?"bad":""}"><td>${esc(r.item)}${r.bad?`<span class="fixnote">算算看：應為 ${fmt(r.calc)}</span>`:r.missing?`<span class="fixnote">小計還沒填</span>`:""}</td><td class="n">${esc(r.unit)||"—"}</td><td class="n">${esc(r.qty)||"—"}</td><td class="n">${esc(r.times)||"—"}</td><td class="n">${fmt(r.subN)}</td></tr>`).join("")}</tbody><tfoot><tr><td>合計${t.noTotal?"（自動加總）":""}</td><td></td><td></td><td></td><td class="n tot">${fmt(t.shown)}</td></tr></tfoot></table></div>`;
-        const b=[];
-        if(t.noTotal)b.push(`<span class="badge warn">合計欄空白，先幫你加總成 ${fmt(t.sum)} 元</span>`);
-        else if(t.totalOff)b.push(`<span class="badge warn">各項加起來是 ${fmt(t.sum)} 元，和合計 ${fmt(t.stated)} 元不同</span>`);
-        if(t.badRows.length)b.push(`<span class="badge warn">有 ${t.badRows.length} 項要重算（紅色列）</span>`);
-        if(!b.length)b.push(`<span class="badge ok">每一項都算對了</span>`);
-        h+=`<div class="chk">${b.join("")}</div>`;
-      });
-      h+=`</div>`;
-    }else if(a.hasP)h+=`<div class="none">提出解方後，再列出每一個項目的單價、數量與次數。</div>`;
-  }
-  $("pBody").innerHTML=h;
-  $("pBody").querySelectorAll("[data-goedit]").forEach(b=>b.onclick=()=>{tab="edit";renderPanel();$("pBody").scrollTop=0});
-}
-document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{tab=b.dataset.tab;renderPanel();$("pBody").scrollTop=0});
-
-function startDraft(){
-  const rec=STUDENTS[current];
-  draft={place:rec.place||"",quad:clone(rec.quad||{}),ideas:clone(rec.ideas||[]),tables:clone(rec.tables||[])};
-  QUAD.forEach(([k])=>draft.quad[k]=draft.quad[k]||[]);
-  // 找回上次沒存的內容（例如不小心重新整理）
-  try{const sv=JSON.parse(localStorage.getItem(draftKey())||"null");
-    if(sv&&sv.base===(rec.updatedAt||0)&&sv.draft){draft=sv.draft;sDirty=true;setTimeout(()=>toast("已幫你找回上次還沒儲存的內容"),300)}}catch(e){}
-}
-function markS(){
-  sDirty=true;
-  try{localStorage.setItem(draftKey(),JSON.stringify({base:STUDENTS[current].updatedAt||0,draft}))}catch(e){}
-  const st=$("sSaveSt");if(st){st.textContent="尚未儲存";st.classList.add("dirty")}
-  const eb=document.querySelector('.tabs button[data-tab="edit"]');if(eb&&!eb.querySelector(".udot"))eb.insertAdjacentHTML("beforeend",'<i class="udot" title="尚未儲存"></i>');
-}
-function clearDraft(){sDirty=false;draft=null;try{localStorage.removeItem(draftKey())}catch(e){}}
-function renderEdit(){
-  if(!draft)startDraft();
-  const rec=STUDENTS[current],lines=a=>(a||[]).join("\n");
-  $("pBody").innerHTML=`
-  <div class="edit-hint">每一格一行寫一筆，寫完按最下面的「儲存」。島屋會跟著你的進度蓋起來。</div>
-  ${rec.advice?`<div class="advice"><b>老師的下一步建議</b><p>${esc(rec.advice)}</p></div>`:""}
-  <div class="fset"><h4>我的地方</h4>${field("你要盤點的地方","s_place",draft.place,{ph:"例如：西衛"})}</div>
-  <div class="fset"><h4>四象限盤點 <small style="font-weight:400;color:var(--muted)">一行一筆</small></h4><div class="frow">
-    ${QUAD.map(([k,t,sub])=>field(`${t}・${sub}`,"s_quad."+k,lines(draft.quad[k]),{area:true})).join("")}</div></div>
-  <div class="fset"><h4>我提出的解方 <small style="font-weight:400;color:var(--muted)">一行一個</small></h4>${field("解方","s_ideas",lines(draft.ideas),{area:true})}</div>
-  <div class="fset"><h4>預算表</h4><div class="edit-hint">填「單價、數量、次數」，右邊會自動幫你核算；紅字代表小計和算出來的不一樣。</div><div id="sBEd" style="display:flex;flex-direction:column;gap:10px"></div><div><button class="btn" id="sAddTbl">＋ 新增一張預算表</button></div></div>
-  <div class="savebar"><span class="st ${sDirty?"dirty":""}" id="sSaveSt">${sDirty?"尚未儲存":rec.updatedAt?"已儲存":"還沒有修改"}</span><button class="btn" id="sCancel">放棄修改</button><button class="go sm" id="sSave">儲存</button></div>`;
-  $("pBody").querySelectorAll("[data-k]").forEach(el=>el.oninput=()=>{
-    const k=el.dataset.k.slice(2);
-    if(k.startsWith("quad."))draft.quad[k.slice(5)]=el.value.split("\n").map(x=>x.trim()).filter(Boolean);
-    else if(k==="ideas")draft.ideas=el.value.split("\n").map(x=>x.trim()).filter(Boolean);
-    else draft[k]=el.value;
-    markS();
-  });
-  $("sAddTbl").onclick=()=>{draft.tables.push({title:draft.tables.length?"方案"+(draft.tables.length+1):"",total:"",rows:[{item:"",unit:"",qty:"",times:"",sub:""}]});renderBudgetEd($("sBEd"),draft,markS,"s");markS()};
-  renderBudgetEd($("sBEd"),draft,markS,"s");
-  $("sSave").onclick=saveMine;
-  let arm=null;
-  $("sCancel").onclick=()=>{const b=$("sCancel");if(!sDirty)return;
-    if(!b.classList.contains("armed")){b.classList.add("armed");b.textContent="再按一次確認放棄";clearTimeout(arm);arm=setTimeout(()=>{b.classList.remove("armed");b.textContent="放棄修改"},3000);return}
-    clearDraft();renderPanel();toast("已放棄修改")};
-}
-const STEP_DONE_MSG=["地基打好了","牆壁蓋起來了","屋頂蓋好了","旗子插上了","燈火點亮了"];
-async function saveMine(){
-  if(sSaving)return;if(!sDirty){toast("還沒有修改喔");return}
-  sSaving=true;$("sSave").disabled=true;$("sSaveSt").textContent="儲存中…";
-  const before=analyze(STUDENTS[current]);
-  try{
-    const d=await api("save",{name:STUDENTS[current].name,pin:MYPIN,student:draft});
-    clearDraft();STUDENTS={[d.id]:d.student};current=d.id;
-    const after=analyze(d.student);
-    const gained=after.steps.map((v,i)=>v&&!before.steps[i]?i:-1).filter(i=>i>=0);
-    placeMyHouse(current);renderPanel();
-    if(gained.length){celebrate();confetti();toast("島屋升級！"+gained.map(i=>STEP_DONE_MSG[i]).join("、"))}
-    else toast("已儲存");
-  }catch(err){
-    const st=$("sSaveSt");if(st){st.textContent="尚未儲存";st.classList.add("dirty")}
-    if(err.code==="pin_not_set"){openPinSet()}
-    else if(err.code==="bad_pin"||err.code==="pin_required"||err.code==="locked"){toast("密碼失效了（可能老師幫你重設過），內容已先保留，請重新登島")}
-    else toast("儲存失敗，請再按一次儲存");
-  }finally{sSaving=false;const b=$("sSave");if(b)b.disabled=false}
-}
-
-async function api(route,body){
-  const r=await fetch("/api/"+route,body===undefined?{cache:"no-store"}:{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});
-  let d={};try{d=await r.json()}catch(e){}
-  if(!r.ok){const e=new Error(d.error||"http_"+r.status);e.code=d.error||"http";e.data=d;throw e}
+/* ---------- 資料層（連到 Netlify 後端 /api） ---------- */
+const S={mode:"net",problems:[],solutions:[],counts:{},mine:new Set(),isOwner:false,canEdit:false,readOnly:false,adminPw:"",adminEnabled:null,nick:LS.get("isle_nick",""),real:LS.get("isle_real",""),loaded:false,offline:false};
+let UID=LS.get("isle_uid",null);
+if(!UID){UID=Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,"0")).join("");LS.set("isle_uid",UID)}
+function myId(){return "me"}
+function solsFor(pid){return S.solutions.filter(s=>s.problemId===pid)}
+function voteCount(sid){return S.counts[sid]||0}
+function iVoted(sid){return S.mine.has(sid)}
+async function api(path,body){
+  const r=await fetch("/api/"+path,{method:body?"POST":"GET",headers:{"content-type":"application/json","x-uid":UID},body:body?JSON.stringify(body):undefined});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok)throw{code:d.error||"server",status:r.status};
   return d;
 }
-function login(id,remember=true){
-  current=id;tab="home";draft=null;sDirty=false;
-  if(remember){try{localStorage.setItem("jfd_island_name",STUDENTS[id].name)}catch(e){}}
-  $("gate").hidden=true;$("panel").hidden=false;$("teacherBtn").hidden=true;
-  placeMyHouse(id);renderPanel();applyOffset();focusPlot();
-  setTimeout(()=>{celebrate();confetti()},700);
-}
-function logout(){
-  const wasPreview=previewing;previewing=false;current=null;STUDENTS={};MYPIN="";draft=null;sDirty=false;
-  if(!wasPreview){try{localStorage.removeItem("jfd_island_name");sessionStorage.removeItem("jfd_pin")}catch(e){}}
-  $("pinForm").hidden=true;$("pinIn").value="";$("pinSetBox").hidden=true;$("panel").classList.remove("wide");
-  $("panel").hidden=true;$("gate").hidden=false;$("teacherBtn").hidden=false;removeMyHouse();applyOffset();landingView();
-  $("nameIn").value="";$("loginMsg").textContent="";
-}
-let leaveArm=null;
-$("leaveBtn").onclick=()=>{
-  const b=$("leaveBtn");
-  if(sDirty&&!b.classList.contains("armed")){b.classList.add("armed");b.textContent="作業還沒儲存，再按一次離開";clearTimeout(leaveArm);leaveArm=setTimeout(()=>{b.classList.remove("armed");b.textContent="離開島屋"},3500);return}
-  b.classList.remove("armed");b.textContent="離開島屋";logout();
-};
-async function tryLogin(name,remember,pin){
-  const d=await api("login",{name,pin:pin||undefined});
-  MYPIN=pin||"";try{if(MYPIN)sessionStorage.setItem("jfd_pin",MYPIN)}catch(e){}
-  STUDENTS={[d.id]:d.student};login(d.id,remember);
-  if(!d.hasPin)openPinSet();
-}
-function pinError(err){
-  if(err.code==="bad_pin")return `密碼不對，還可以再試 ${err.data.left} 次。`;
-  if(err.code==="locked")return `錯太多次了，請等 ${err.data.wait||5} 分鐘再試，或請老師幫你重設密碼。`;
-  return null;
-}
-function askPin(name){
-  $("nameIn").value=name;$("pinForm").hidden=false;$("pinIn").value="";
-  $("loginMsg").textContent="這個島屋有密碼，請輸入你的 4 位數密碼。";$("pinIn").focus();
-}
-$("pinForm").addEventListener("submit",async e=>{
-  e.preventDefault();if(busy)return;
-  const name=$("nameIn").value.trim(),pin=$("pinIn").value.trim();
-  if(!/^\d{4}$/.test(pin)){$("loginMsg").textContent="密碼是 4 個數字。";$("pinIn").focus();return}
-  busy=true;$("loginMsg").innerHTML='<span class="waves">〰</span> 正在划船靠岸…';
-  try{await tryLogin(name,true,pin);$("loginMsg").textContent="";$("pinForm").hidden=true;$("pinIn").value=""}
-  catch(err){$("loginMsg").textContent=pinError(err)||(err.code==="not_found"?CFG.notFound:"船靠不了岸（連線失敗），請稍後再試。");$("pinIn").value="";$("pinIn").focus()}
-  finally{busy=false}
-});
-function openPinSet(){if(previewing)return;$("pinSetBox").hidden=false;$("pinSetMsg").textContent="";$("pinNew").value="";$("pinNew2").value="";setTimeout(()=>$("pinNew").focus(),100)}
-$("pinSetForm").addEventListener("submit",async e=>{
-  e.preventDefault();
-  const a=$("pinNew").value.trim(),b=$("pinNew2").value.trim();
-  if(!/^\d{4}$/.test(a)){$("pinSetMsg").textContent="請輸入 4 個數字。";$("pinNew").focus();return}
-  if(a!==b){$("pinSetMsg").textContent="兩次輸入的不一樣，再試一次。";$("pinNew2").value="";$("pinNew2").focus();return}
-  try{await api("setpin",{name:STUDENTS[current].name,newPin:a});MYPIN=a;try{sessionStorage.setItem("jfd_pin",a)}catch(_){}
-    $("pinSetBox").hidden=true;toast("密碼設好了！記住它，下次登島要用。")}
-  catch(err){$("pinSetMsg").textContent=err.code==="pin_required"?"這個島屋剛剛已經設過密碼了，請重新登島。":"設定失敗，請再試一次。"}
-});
-let busy=false;
-$("nameIn").addEventListener("input",()=>{if(!$("pinForm").hidden){$("pinForm").hidden=true;$("loginMsg").textContent=""}});
-$("loginForm").addEventListener("submit",async e=>{
-  e.preventDefault();if(busy)return;
-  const name=$("nameIn").value.trim();if(!name){$("nameIn").focus();return}
-  if(!$("pinForm").hidden){$("pinForm").requestSubmit();return}
-  busy=true;$("goBtn").disabled=true;$("loginMsg").innerHTML='<span class="waves">〰</span> 正在划船靠岸…';
-  try{await tryLogin(name,true);$("loginMsg").textContent=""}
-  catch(err){
-    if(err.code==="pin_required"){askPin(name)}
-    else{$("loginMsg").textContent=pinError(err)||(err.code==="not_found"?(err.data&&err.data.empty?"島上還沒有同學的資料，請老師先到後台放上資料。":CFG.notFound):"船靠不了岸（連線失敗），請稍後再試。");$("nameIn").focus()}
-  }finally{busy=false;$("goBtn").disabled=false}
-});
-// 同學在島上時，定期拿老師最新修改的內容
-async function refreshMine(){
-  if(!current||previewing||sDirty||sSaving)return;
-  try{const d=await api("login",{name:STUDENTS[current].name,pin:MYPIN||undefined});
-    if(JSON.stringify(d.student)!==JSON.stringify(STUDENTS[current])){STUDENTS={[d.id]:d.student};current=d.id;placeMyHouse(current);renderPanel()}}
-  catch(err){if(err.code==="not_found"||err.code==="pin_required"||err.code==="bad_pin")logout()}
-}
-setInterval(refreshMine,60000);
-document.addEventListener("visibilitychange",()=>{if(!document.hidden)refreshMine()});
-function applyCfg(){
-  $("siteTitle").textContent=CFG.title||CFG_DEFAULT.title;$("siteSub").textContent=CFG.sub||"";
-  $("welcome").textContent=CFG.welcome||CFG_DEFAULT.welcome;$("welcomeSub").textContent=CFG.welcomeSub||"";
-  $("loginHint").textContent=CFG.hint||"";
-  document.title=(CFG.title||"解方島")+"・我的島屋";
+let loading=false,lastVer=null,lastSync=0,lastMove=0,syncing=false;
+async function sync(){
+  if(syncing||document.hidden||!S.nick)return;syncing=true;lastSync=Date.now();
+  try{const d=await api("presence",{name:S.nick,x:Math.round(av.x),y:Math.round(av.y),d:Math.round(av.dir*100)/100});
+    setPlayers(d.players||[]);S.offline=false;
+    if(d.ver&&d.ver!==lastVer){lastVer=d.ver;load()}}
+  catch(e){if(!S.loaded)S.offline=true}
+  finally{syncing=false;lastSync=Date.now()}
 }
 
-/* ---------- data ---------- */
+let reloadPending=false;
+async function load(){
+  if(loading){reloadPending=true;return}loading=true;
+  try{const d=await api("state");
+    const prevIds=S.loaded?new Set(S.solutions.map(x=>x.id)):null;
+    S.problems=(d.problems||[]).sort((a,b)=>(a.at||0)-(b.at||0));S.solutions=d.solutions||[];
+    if(prevIds){const fresh=S.solutions.filter(x=>!prevIds.has(x.id));if(fresh.length)setTimeout(()=>celebrate(fresh),50)}S.counts=d.counts||{};S.mine=new Set(d.mine||[]);S.adminEnabled=!!d.adminEnabled;S.offline=false;S.loaded=true;if(d.ver)lastVer=d.ver;
+  }catch(e){S.offline=true}
+  finally{loading=false}
+  onData();
+  if(reloadPending){reloadPending=false;load()}
+}
 async function initData(){
-  try{const d=await api("config");CFG=mergeCfg(d.config);applyCfg()}catch(e){}
-  let saved=null;try{saved=localStorage.getItem("jfd_island_name")}catch(e){}
-  let spin="";try{spin=sessionStorage.getItem("jfd_pin")||""}catch(e){}
-  if(saved){try{await tryLogin(saved,false,spin)}catch(e){if(e.code==="pin_required"||e.code==="bad_pin"){try{sessionStorage.removeItem("jfd_pin")}catch(_){}askPin(saved);return}try{localStorage.removeItem("jfd_island_name")}catch(_){}}}
-  if(!current)$("nameIn").focus();
+  $("bAdmin").hidden=false;$("bAdmin").textContent="老師";
+  await load();
+  // 線上同學：走動時約 5 秒、站著時約 15 秒同步一次；切到別的分頁就暫停
+  setInterval(()=>{const gap=(Date.now()-lastMove<8000)?5000:15000;if(Date.now()-lastSync>=gap)sync()},1000);
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)sync()});
 }
+function setNotice(){
+  const n=$("notice");let t="";
+  if(S.offline)t="連不上島嶼伺服器，正在重試。如果你是直接在電腦上打開這個檔案，要先部署到 Netlify 才能使用。";
+  else if(S.loaded&&!S.problems.length)t=S.isOwner?"島上還沒有問題。在老師後台貼上學生盤點出的問題清單，一行一個。":"島上還沒有問題。老師可以按「老師」登入後匯入；你也可以按「＋插一面問題旗」放上你盤點到的問題。";
+  n.textContent=t;n.hidden=!t;
+}
+function failWrite(e){
+  const c=e&&e.code;
+  if(c==="too_short")return "內容太短，請多寫一點。";
+  if(c==="no_uses")return "請至少選一個用到的地方資源。";
+  if(c==="bad_area")return "請選擇問題的面向。";
+  if(c==="full")return "島上的資料已滿，請老師清掉一些舊資料。";
+  if(c==="not_found")return "這個問題或解方已經被刪除了。";
+  if(c==="forbidden")return "只有作者本人或老師可以刪除。";
+  return "送出失敗，請檢查網路後再試一次。";
+}
+async function addProblem(p){await api("problem",{...p,name:S.nick,real:S.real});await load()}
+async function addSolution(s){await api("solution",{...s,name:S.nick,real:S.real});await load()}
+let voting=false;
+async function toggleVote(sid){
+  if(voting)return;voting=true;
+  const on=!S.mine.has(sid);
+  if(on)S.mine.add(sid);else S.mine.delete(sid);
+  S.counts[sid]=Math.max(0,(S.counts[sid]||0)+(on?1:-1));onData();
+  try{await api("vote",{solId:sid,on})}catch(e){toast(failWrite(e))}
+  finally{voting=false;load()}
+}
+async function delSolution(id){await api("delete",{kind:"s",id,password:S.adminPw});await load()}
+async function delProblem(id){await api("delete",{kind:"p",id,password:S.adminPw});await load()}
 
-/* ---------- teacher admin ---------- */
-let edId=null,ed=null,edDirty=false,edBase=0,HASPIN={};
-const NEW_ID="__new__";
-function setDirty(v){edDirty=v;$("dirty").hidden=!v;$("save").disabled=!v;$("discard").hidden=!v}
-async function loadAll(){const d=await api("admin",{password:PW,action:"list"});ALL={};HASPIN={};d.students.forEach(r=>{ALL[r.id]=r.data;HASPIN[r.id]=!!r.hasPin});CFG=mergeCfg(d.config);applyCfg();renderStuList()}
-$("teacherBtn").onclick=async()=>{
-  if(!PW){try{PW=sessionStorage.getItem("jfd_pw")||""}catch(e){}}
-  if(PW){try{await loadAll();$("admin").hidden=false;return}catch(e){PW=""}}
-  $("pwBox").hidden=false;$("pwMsg").textContent="";$("pwIn").value="";$("pwIn").focus();
-};
-$("pwCancel").onclick=()=>$("pwBox").hidden=true;
-$("pwForm").addEventListener("submit",async e=>{
-  e.preventDefault();PW=$("pwIn").value;
-  try{await loadAll();try{sessionStorage.setItem("jfd_pw",PW)}catch(_){}$("pwBox").hidden=true;$("admin").hidden=false}
-  catch(err){PW="";$("pwMsg").textContent=err.code==="forbidden"?"密碼不對，再試一次。":err.code==="no_password"?"Netlify 還沒設定 ADMIN_PASSWORD，設定後要重新部署一次。":"連線失敗，請稍後再試。"}
+/* ---------- 地圖生成 ---------- */
+const W=70,H=48,T=16;
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const R=rng(20261026);
+function makeNoise(gs){const g=[];for(let i=0;i<(gs+1)*(gs+1);i++)g.push(R());return(x,y)=>{const fx=x*gs,fy=y*gs,ix=Math.floor(fx),iy=Math.floor(fy),tx=fx-ix,ty=fy-iy,sx=tx*tx*(3-2*tx),sy=ty*ty*(3-2*ty);const v=(a,b)=>g[Math.min(gs,Math.max(0,b))*(gs+1)+Math.min(gs,Math.max(0,a))];const a=v(ix,iy)+(v(ix+1,iy)-v(ix,iy))*sx,b=v(ix,iy+1)+(v(ix+1,iy+1)-v(ix,iy+1))*sx;return a+(b-a)*sy}}
+const n1=makeNoise(5),n2=makeNoise(11);
+const land=new Uint8Array(W*H),zone=new Int8Array(W*H).fill(-1),occ=new Uint8Array(W*H);
+const cx=W/2,cy=H/2+1,rx=W*0.40,ry=H*0.39;
+for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+  const d=Math.hypot((x-cx)/rx,(y-cy)/ry);
+  const n=(n1(x/W,y/H)-0.5)*0.45+(n2(x/W,y/H)-0.5)*0.22;
+  if(d+n<0.95&&x>2&&y>2&&x<W-3&&y<H-3)land[y*W+x]=1;
+}
+const isLand=(x,y)=>x>=0&&y>=0&&x<W&&y<H&&land[y*W+x]===1;
+const isBeach=(x,y)=>isLand(x,y)&&(!isLand(x+1,y)||!isLand(x-1,y)||!isLand(x,y+1)||!isLand(x,y-1));
+function nearestLand(px,py){let best=null,bd=1e9;for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(isLand(x,y)&&!isBeach(x,y)){const d=(x-px)**2+(y-py)**2;if(d<bd){bd=d;best=[x,y]}}return best}
+// 8 區中心（相對於島的半徑）
+const ZREL={t1:[-0.58,-0.22],t6:[-0.18,-0.58],t4:[0.28,-0.55],t3:[0.66,-0.08],t2:[0.42,0.48],t8:[-0.02,0.5],t7:[-0.52,0.45],t5:[0.02,-0.04]};
+const ZC={};AKEYS.forEach(k=>{const r=ZREL[k];ZC[k]=nearestLand(cx+rx*r[0],cy+ry*r[1])});
+for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(isLand(x,y)){let bi=-1,bd=1e9;AKEYS.forEach((k,i)=>{const d=(x-ZC[k][0])**2+(y-ZC[k][1])**2;if(d<bd){bd=d;bi=i}});zone[y*W+x]=bi}
+// 旗位
+const SLOTS={};
+AKEYS.forEach((k,i)=>{
+  const c=ZC[k],cand=[];
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(zone[y*W+x]===i&&!isBeach(x,y)&&isLand(x,y-1)&&isLand(x,y+1))cand.push([x,y,Math.hypot(x-c[0],y-c[1])]);
+  cand.sort((a,b)=>a[2]-b[2]);
+  const ch=[];
+  for(const p of cand){if(p[2]<2.4)continue;if(ch.every(q=>Math.hypot(q[0]-p[0],q[1]-p[1])>=3.1))ch.push(p);if(ch.length>=14)break}
+  SLOTS[k]=ch.map(p=>[p[0],p[1]]);
+  ch.forEach(([x,y])=>{for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const xx=x+dx,yy=y+dy;if(xx>=0&&yy>=0&&xx<W&&yy<H)occ[yy*W+xx]=1}});
+  for(let dy=-2;dy<=1;dy++)for(let dx=-2;dx<=2;dx++){const xx=c[0]+dx,yy=c[1]+dy;if(xx>=0&&yy>=0&&xx<W&&yy<H)occ[yy*W+xx]=1}
 });
-$("seedBtn").onclick=async()=>{
-  const b=$("seedBtn");b.disabled=true;
-  try{const d=await api("admin",{password:PW,action:"seed"});await loadAll();toast(d.added?`已放上 ${d.added} 位同學`:"課堂的同學都已經在島上了")}
-  catch(e){toast("放上失敗，請再試一次")}finally{b.disabled=false}
-};
-$("closeAdm").onclick=()=>{if(edDirty){toast("還有尚未儲存的修改，請先儲存或放棄修改");return}$("admin").hidden=true};
-$("admQ").oninput=renderStuList;
-$("reloadAll").onclick=async()=>{try{await loadAll();toast("名單已更新")}catch(e){toast("更新失敗，請再試一次")}};
-const tfmt=t=>{if(!t)return"";const d=new Date(t);return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`};
-function sortedIds(){return Object.keys(ALL).sort((a,b)=>(ALL[a].order||999)-(ALL[b].order||999)||a.localeCompare(b))}
-function renderStuList(){
-  const q=norm($("admQ").value);
-  let h=`<button data-id="__cfg" class="${edId==="__cfg"?"on":""}"><span>網站文字與公告<small>登島畫面、所有人看到的公告</small></span></button><div class="sec">同學（${Object.keys(ALL).length}）</div>`;
-  sortedIds().filter(id=>!q||norm(ALL[id].name).includes(q)||norm(ALL[id].place).includes(q)).forEach(id=>{
-    const r=ALL[id],a=analyze(r);
-    h+=`<button data-id="${esc(id)}" class="${edId===id?"on":""}"><span>${esc(r.name)}<small>${esc(r.place||"地點未填")}${HASPIN[id]?"・已設密碼":""}${r.updatedBy==="student"?`<br><span class="upd">同學更新 ${tfmt(r.updatedAt)}</span>`:""}</small></span><span class="st">${"★".repeat(a.done)}${"☆".repeat(5-a.done)}</span></button>`;
-  });
-  if(edId===NEW_ID)h+=`<button class="on"><span>${esc(ed.name||"新同學")}<small>尚未儲存</small></span></button>`;
-  $("slist").innerHTML=h;
-  $("slist").querySelectorAll("button[data-id]").forEach(b=>b.onclick=()=>openEditor(b.dataset.id));
-}
-function openEditor(id){
-  if(edDirty){toast("還有尚未儲存的修改，請先儲存或放棄修改");return}
-  edId=id;setDirty(false);
-  if(id==="__cfg"){ed={...CFG_DEFAULT,...CFG};renderCfgEditor()}
-  else{ed=clone(ALL[id]);edBase=ALL[id].updatedAt||0;ed.quad=ed.quad||{};QUAD.forEach(([k])=>ed.quad[k]=ed.quad[k]||[]);ed.ideas=ed.ideas||[];ed.tables=ed.tables||[];renderStuEditor()}
-  renderStuList();
-}
-$("addStu").onclick=()=>{
-  if(edDirty){toast("還有尚未儲存的修改，請先儲存或放棄修改");return}
-  const maxO=Math.max(0,...Object.values(ALL).map(r=>r.order||0));
-  edId=NEW_ID;ed={order:maxO+1,name:"",place:"",quad:{num:[],itv:[],obs:[],beh:[]},advice:"",note:"",ideas:[],tables:[]};
-  renderStuEditor();setDirty(true);renderStuList();
-};
-$("discard").onclick=()=>{const id=edId;setDirty(false);if(id===NEW_ID){edId=null;$("edBody").innerHTML='<div class="none">已放棄新增。</div>';barFor(null);renderStuList()}else openEditor(id)};
-function barFor(kind){
-  $("preview").hidden=kind!=="stu"||edId===NEW_ID;$("delStu").hidden=kind!=="stu"||edId===NEW_ID;
-  $("delStu").classList.remove("armed");$("delStu").textContent="刪除";
-  $("histBtn").hidden=kind!=="stu"||edId===NEW_ID;$("pinReset").hidden=kind!=="stu"||edId===NEW_ID||!HASPIN[edId];
-  $("pinReset").classList.remove("armed");$("pinReset").textContent="重設密碼";
-  $("edTitle").textContent=kind==="cfg"?"網站文字與公告":kind==="stu"?(ed.name||"新同學"):"選一位同學開始編輯";
-}
-function field(label,key,val,{area=false,hint="",ph=""}={}){
-  const id="f_"+key.replace(/\W/g,"_");
-  return `<label class="f" for="${id}">${label}${hint?` <small>${hint}</small>`:""}${area?`<textarea id="${id}" data-k="${key}" placeholder="${esc(ph)}">${esc(val)}</textarea>`:`<input id="${id}" data-k="${key}" value="${esc(val)}" placeholder="${esc(ph)}">`}</label>`;
-}
-function renderCfgEditor(){
-  barFor("cfg");
-  $("edBody").innerHTML=`<div class="fset"><h4>登島畫面</h4><div class="frow">${field("島名","title",ed.title)}${field("副標","sub",ed.sub)}</div>
-  <div class="frow">${field("歡迎標題","welcome",ed.welcome)}${field("歡迎說明","welcomeSub",ed.welcomeSub)}</div>
-  <div class="frow">${field("輸入框下方提示","hint",ed.hint)}${field("找不到名字時的訊息","notFound",ed.notFound)}</div></div>
-  <div class="fset"><h4>給所有同學的公告</h4>${field("公告","notice",ed.notice,{area:true,hint:"會出現在每位同學「我的島屋」最上方；留白就不顯示",ph:"例如：下週三上課前，把訪談格補上至少一筆。"})}</div>`;
-  $("edBody").querySelectorAll("[data-k]").forEach(el=>el.oninput=()=>{ed[el.dataset.k]=el.value;setDirty(true)});
-}
-function renderStuEditor(){
-  barFor("stu");
-  const lines=a=>(a||[]).join("\n");
-  $("edBody").innerHTML=`
-  <div class="fset"><h4>基本資料</h4><div class="frow">${field("姓名","name",ed.name,{hint:"同學登島時要輸入的名字"})}${field("我的地方","place",ed.place)}</div></div>
-  <div class="fset"><h4>四象限盤點 <small style="font-weight:400;color:var(--muted)">一行一筆</small></h4><div class="frow">
-    ${QUAD.map(([k,t,s])=>field(`${t}・${s}`,"quad."+k,lines(ed.quad[k]),{area:true})).join("")}</div></div>
-  <div class="fset"><h4>老師的文字</h4>
-    ${field("老師的下一步建議","advice",ed.advice,{area:true})}
-    ${field("老師給你的話","note",ed.note,{area:true,hint:"選填，只有這位同學看得到",ph:"例如：預算表重算後，下週帶來給我看。"})}</div>
-  <div class="fset"><h4>解方 <small style="font-weight:400;color:var(--muted)">一行一個</small></h4>${field("提出的解方","ideas",lines(ed.ideas),{area:true})}</div>
-  <div class="fset"><h4>預算表</h4><div id="bEd" style="display:flex;flex-direction:column;gap:10px"></div><div><button class="btn" id="addTbl">＋ 新增一張預算表</button></div></div>`;
-  $("edBody").querySelectorAll("[data-k]").forEach(el=>el.oninput=()=>{
-    const k=el.dataset.k;
-    if(k.startsWith("quad."))ed.quad[k.slice(5)]=el.value.split("\n").map(s=>s.trim()).filter(Boolean);
-    else if(k==="ideas")ed.ideas=el.value.split("\n").map(s=>s.trim()).filter(Boolean);
-    else ed[k]=el.value;
-    if(k==="name")$("edTitle").textContent=el.value||"新同學";
-    setDirty(true);
-  });
-  const tm=()=>setDirty(true);
-  $("addTbl").onclick=()=>{ed.tables.push({title:ed.tables.length?"方案"+(ed.tables.length+1):"",total:"",rows:[{item:"",unit:"",qty:"",times:"",sub:""}]});renderBudgetEd($("bEd"),ed,tm,"a");setDirty(true)};
-  renderBudgetEd($("bEd"),ed,tm,"a");
-}
-function rowCalc(r){const v=[r.unit,r.qty,r.times].map(num).filter(x=>x!=null);if(!v.length)return["",false];const c=v.reduce((a,b)=>a*b,1),s=num(r.sub);return[`= ${fmt(c)}`,s!=null&&s!==c]}
-function renderBudgetEd(box,tgt,mark,pre){
-  if(!tgt.tables.length){box.innerHTML='<div class="none">還沒有預算表。</div>';return}
-  const again=()=>renderBudgetEd(box,tgt,mark,pre);
-  box.innerHTML=tgt.tables.map((t,ti)=>`<div class="bt" data-ti="${ti}">
-    <div class="bt-head"><label class="f" for="${pre}bt${ti}">表名（只有一張可留白）<input id="${pre}bt${ti}" data-tf="title" value="${esc(t.title)}"></label>
-      <label class="f" for="${pre}btt${ti}" style="max-width:180px">合計 <small>留白＝自動加總</small><input id="${pre}btt${ti}" data-tf="total" value="${esc(t.total)}"></label>
-      <button class="btn danger" data-deltbl="${ti}">刪除這張表</button></div>
-    <div style="overflow-x:auto"><table><thead><tr><th>項目</th><th>單價</th><th>數量</th><th>次數</th><th>小計</th><th class="n">核算</th><th></th></tr></thead><tbody>
-    ${t.rows.map((r,ri)=>{const [c,bad]=rowCalc(r);return `<tr data-ri="${ri}">${["item","unit","qty","times","sub"].map(f=>`<td><label hidden for="${pre}c${ti}_${ri}_${f}">${f}</label><input id="${pre}c${ti}_${ri}_${f}" data-rf="${f}" value="${esc(r[f])}"></td>`).join("")}<td class="calc ${bad?"bad":""}">${c}</td><td><button class="x" data-delrow="${ri}" aria-label="刪除這一列">✕</button></td></tr>`}).join("")}
-    </tbody></table></div><div><button class="btn" data-addrow="${ti}">＋ 新增一列</button></div></div>`).join("");
-  box.querySelectorAll(".bt").forEach(el=>{
-    const ti=+el.dataset.ti,t=tgt.tables[ti];
-    el.querySelectorAll("[data-tf]").forEach(i=>i.oninput=()=>{t[i.dataset.tf]=i.value;mark()});
-    el.querySelectorAll("tr[data-ri]").forEach(tr=>{const r=t.rows[+tr.dataset.ri];
-      tr.querySelectorAll("[data-rf]").forEach(i=>i.oninput=()=>{r[i.dataset.rf]=i.value;const [c,bad]=rowCalc(r);const cc=tr.querySelector(".calc");cc.textContent=c;cc.classList.toggle("bad",bad);mark()})});
-    el.querySelectorAll("[data-delrow]").forEach(b=>b.onclick=()=>{t.rows.splice(+b.dataset.delrow,1);again();mark()});
-    el.querySelector("[data-addrow]").onclick=()=>{t.rows.push({item:"",unit:"",qty:"",times:"",sub:""});again();mark()};
-    el.querySelector("[data-deltbl]").onclick=()=>{tgt.tables.splice(ti,1);again();mark()};
-  });
-}
-function cleanRec(r){
-  return {order:r.order||0,name:(r.name||"").trim(),place:(r.place||"").trim(),
-    quad:Object.fromEntries(QUAD.map(([k])=>[k,(r.quad[k]||[]).filter(Boolean)])),
-    advice:(r.advice||"").trim(),note:(r.note||"").trim(),ideas:(r.ideas||[]).filter(Boolean),
-    tables:(r.tables||[]).map(t=>({title:(t.title||"").trim(),total:(t.total||"").trim(),rows:t.rows.filter(x=>Object.values(x).some(v=>String(v).trim())).map(x=>({item:(x.item||"").trim(),unit:(x.unit||"").trim(),qty:(x.qty||"").trim(),times:(x.times||"").trim(),sub:(x.sub||"").trim()}))}))};
-}
-$("save").onclick=async()=>{
-  if(!edDirty)return;$("save").disabled=true;
-  try{
-    if(edId==="__cfg"){const d=await api("admin",{password:PW,action:"config",config:ed});CFG=mergeCfg(d.config);applyCfg();if(current)renderPanel();toast("網站文字已儲存")}
-    else{
-      const rec=cleanRec(ed);
-      if(!rec.name){toast("請先填姓名");$("save").disabled=false;return}
-      const d=await api("admin",{password:PW,action:"save",id:edId===NEW_ID?"":edId,student:rec,baseUpdatedAt:edBase,force:forceSave});forceSave=false;edBase=d.student.updatedAt||0;
-      ALL[d.id]=d.student;edId=d.id;ed=clone(d.student);toast(`${d.student.name} 的資料已儲存`);
-      if(current===d.id){STUDENTS={[d.id]:d.student};placeMyHouse(d.id);renderPanel()}
-    }
-    setDirty(false);barFor(edId==="__cfg"?"cfg":"stu");renderStuList();
-  }catch(e){$("save").disabled=false;
-    if(e.code==="conflict"){showConflict(e.data.student);return}
-    toast(e.code==="duplicate"?"已經有同名的同學，請加註區別（例如加座號）":e.code==="forbidden"?"老師密碼失效，請重新登入":"儲存失敗，請再試一次")}
-};
-let forceSave=false;
-function showConflict(latest){
-  const box=document.createElement("div");box.className="conflict";
-  box.innerHTML=`<b>${esc(latest.name)} 在 ${tfmt(latest.updatedAt)} 剛更新了作業</b><span>你打開這頁之後，同學又存了檔。要用哪一份？</span><div><button class="btn pri" id="cfLoad">載入同學的最新版（放棄我的修改）</button><button class="btn" id="cfForce">用我的版本覆蓋</button></div>`;
-  $("edBody").prepend(box);$("edBody").scrollTop=0;
-  $("cfLoad").onclick=()=>{ALL[edId]=latest;setDirty(false);openEditor(edId);renderStuList();toast("已載入同學的最新版")};
-  $("cfForce").onclick=()=>{forceSave=true;box.remove();$("save").click()};
-}
-let pinArm=null;
-$("pinReset").onclick=async()=>{
-  const b=$("pinReset");
-  if(!b.classList.contains("armed")){b.classList.add("armed");b.textContent="再按一次確認重設";clearTimeout(pinArm);pinArm=setTimeout(()=>{b.classList.remove("armed");b.textContent="重設密碼"},3500);return}
-  try{await api("admin",{password:PW,action:"resetpin",id:edId});HASPIN[edId]=false;barFor("stu");renderStuList();toast(`${ALL[edId].name} 的密碼已清除，下次登島時會請他重新設定`)}catch(e){toast("重設失敗，請再試一次")}
-};
-function histSummary(d){
-  const q=d.quad||{},cells=QUAD.map(([k,t])=>`${t} ${(q[k]||[]).length}`).join("・");
-  const a=analyze(d);return `${d.place||"地點未填"}｜${cells}｜解方 ${(d.ideas||[]).length}｜預算 ${fmt(a.total)} 元`;
-}
-$("histBtn").onclick=async()=>{
-  if(edDirty){toast("還有尚未儲存的修改，請先儲存或放棄修改");return}
-  const id=edId;$("edBody").innerHTML='<div class="none">讀取修改紀錄中…</div>';
-  try{
-    const {history}=await api("admin",{password:PW,action:"history",id});
-    if(edId!==id)return;
-    const cur=ALL[id];
-    let h=`<div class="fset"><h4>修改紀錄：${esc(cur.name)}</h4><div class="edit-hint">每一筆是「那次存檔之前」的內容。還原後，現在的內容也會留一筆紀錄，可以再還原回來。</div>
-      <div class="hist"><div class="hi"><div class="hh"><b>目前</b><span class="who-tag ${cur.updatedBy==="student"?"stu":""}">${cur.updatedBy==="student"?"同學":"老師"} ${tfmt(cur.updatedAt)}</span><span class="hs">${esc(histSummary(cur))}</span></div></div>`;
-    if(!history.length)h+='<div class="none">還沒有修改紀錄。</div>';
-    history.forEach(x=>{const d=x.data;
-      h+=`<div class="hi"><div class="hh"><b>${tfmt(x.at)}</b><span class="who-tag ${x.by==="student"?"stu":""}">${x.by==="student"?"同學存檔前":"老師存檔前"}</span><span class="hs">${esc(histSummary(d))}</span><button class="btn" data-restore="${x.at}">還原成這個版本</button></div>
-      <details><summary>看內容</summary>${QUAD.map(([k,t])=>`<b>${t}</b><ul>${((d.quad||{})[k]||[]).map(v=>`<li>${esc(v)}</li>`).join("")||"<li>（空白）</li>"}</ul>`).join("")}<b>解方</b><ul>${(d.ideas||[]).map(v=>`<li>${esc(v)}</li>`).join("")||"<li>（空白）</li>"}</ul></details></div>`;});
-    h+=`</div><div><button class="btn" id="histBack">回到編輯</button></div></div>`;
-    $("edBody").innerHTML=h;
-    $("histBack").onclick=()=>openEditor(id);
-    $("edBody").querySelectorAll("[data-restore]").forEach(b=>{let t=null;b.onclick=async()=>{
-      if(!b.classList.contains("armed")){b.classList.add("armed");b.textContent="再按一次確認還原";clearTimeout(t);t=setTimeout(()=>{b.classList.remove("armed");b.textContent="還原成這個版本"},3500);return}
-      try{const d=await api("admin",{password:PW,action:"restore",id,at:+b.dataset.restore});ALL[id]=d.student;toast("已還原");openEditor(id);renderStuList()}catch(e){toast("還原失敗，請再試一次")}}});
-  }catch(e){$("edBody").innerHTML='<div class="none">讀不到修改紀錄，請再試一次。</div>'}
-};
-let delArm=null;
-$("delStu").onclick=async()=>{
-  const b=$("delStu");
-  if(!b.classList.contains("armed")){b.classList.add("armed");b.textContent="再按一次確認刪除";clearTimeout(delArm);delArm=setTimeout(()=>{b.classList.remove("armed");b.textContent="刪除"},3500);return}
-  try{const nm=ALL[edId]?.name;await api("admin",{password:PW,action:"delete",id:edId});delete ALL[edId];setDirty(false);edId=null;$("edBody").innerHTML=`<div class="none">已刪除 ${esc(nm||"")}。</div>`;barFor(null);renderStuList()}catch(e){toast("刪除失敗，請再試一次")}
-};
-$("preview").onclick=()=>{if(edDirty){toast("先儲存，再預覽");return}const id=edId;$("admin").hidden=true;if(current)removeMyHouse();previewing=true;draft=null;sDirty=false;STUDENTS={[id]:ALL[id]};login(id,false);toast("預覽中：按「離開島屋」結束")};
+// 碼頭
+let dock=null;for(let y=H-1;y>=0&&!dock;y--)for(let x=Math.floor(cx)-6;x<Math.floor(cx)+6;x++)if(isBeach(x,y)&&!isLand(x,y+1)){dock=[x,y];break}
+if(!dock)dock=nearestLand(cx,H-4);
 
-initScene();landingView();applyCfg();initData();
-// 備用入口：網址最後加上 #teacher 會直接打開老師登入
-if(location.hash==="#teacher")setTimeout(()=>$("teacherBtn").click(),300);
+/* ---------- 3D 場景（Three.js，low-poly 粉彩風） ---------- */
+const GY=0.2; // 地面高度
+const host=$("map3d"),labelsEl=$("labels");
+let VW=1,VH=1,overview=false,selId=null,toastT=0;
+const smallScreen=Math.min(window.innerWidth,window.innerHeight)<600;
+let renderer=null;
+try{
+  renderer=new THREE.WebGLRenderer({antialias:true});
+  renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));
+  renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  renderer.domElement.style.cssText="display:block;width:100%;height:100%;touch-action:none;cursor:pointer";
+  host.appendChild(renderer.domElement);
+}catch(e){renderer=null;host.innerHTML='<div class="nogl">這台裝置的瀏覽器無法顯示 3D 畫面。<br>請按上方「問題清單」瀏覽問題並提出解方。</div>'}
+
+const scene=new THREE.Scene();
+const SKY=new THREE.Color("#d4eef0");scene.background=SKY;scene.fog=new THREE.Fog(SKY,60,150);
+const camera=new THREE.PerspectiveCamera(32,1,0.5,500);
+scene.add(new THREE.HemisphereLight(0xffffff,0xc9dfb6,0.66));
+const sun=new THREE.DirectionalLight(0xfff1d8,0.56);
+sun.castShadow=true;{const s=smallScreen?1024:2048;sun.shadow.mapSize.set(s,s)}
+Object.assign(sun.shadow.camera,{left:-44,right:44,top:36,bottom:-36,near:1,far:170});
+sun.shadow.bias=-0.0006;sun.shadow.normalBias=0.03;
+sun.position.set(W/2-26,52,H/2+28);sun.target.position.set(W/2,0,H/2);scene.add(sun,sun.target);
+
+// 共用幾何與材質
+const G={
+  box:new THREE.BoxGeometry(1,1,1).translate(0,.5,0),
+  cyl:new THREE.CylinderGeometry(.5,.5,1,7).translate(0,.5,0),
+  ico:new THREE.IcosahedronGeometry(.5,0),
+  roof:new THREE.ConeGeometry(.72,1,4).rotateY(Math.PI/4).translate(0,.5,0),
+  cone6:new THREE.ConeGeometry(1,1,6).translate(0,.5,0),
+  disc:new THREE.CylinderGeometry(.5,.5,1,14).translate(0,.5,0)
+};
+const MAT=new THREE.MeshStandardMaterial({color:0xffffff,flatShading:true,roughness:.95,metalness:0});
+const matCache={};
+const M=c=>matCache[c]||(matCache[c]=new THREE.MeshStandardMaterial({color:c,flatShading:true,roughness:.92,metalness:0}));
+const GLOW=new THREE.MeshBasicMaterial({color:0xffd86b});
+const tV=new THREE.Vector3(),tS=new THREE.Vector3(),tQ=new THREE.Quaternion(),tE=new THREE.Euler(),tM=new THREE.Matrix4(),tC=new THREE.Color();
+
+// 靜態物件用 InstancedMesh 批次畫
+const batches={};
+function put(geo,x,y,z,sx,sy,sz,color,ry,rx,rz,noShadow){
+  const k=geo+(noShadow?"_n":"_s");(batches[k]||(batches[k]={geo,noShadow,items:[]})).items.push([x,y,z,sx,sy,sz,color,rx||0,ry||0,rz||0]);
+}
+function flush(){
+  for(const k in batches){const b=batches[k];const mesh=new THREE.InstancedMesh(G[b.geo],MAT,b.items.length);
+    b.items.forEach((it,i)=>{tE.set(it[7],it[8],it[9]);tQ.setFromEuler(tE);tM.compose(tV.set(it[0],it[1],it[2]),tQ,tS.set(it[3],it[4],it[5]));mesh.setMatrixAt(i,tM);mesh.setColorAt(i,tC.set(it[6]))});
+    mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;
+    mesh.castShadow=!b.noShadow;mesh.receiveShadow=true;scene.add(mesh)}
+}
+
+/* 建島 */
+(function buildIsland(){
+  const r=rng(77);
+  const water=new THREE.Mesh(new THREE.PlaneGeometry(500,500),new THREE.MeshStandardMaterial({color:0x8fcad8,roughness:.7}));
+  water.rotation.x=-Math.PI/2;water.position.set(W/2,-0.05,H/2);water.receiveShadow=true;scene.add(water);
+  const GROUND={t1:"#d3e8b4",t2:"#e2e4ab",t3:"#cfe8c6",t4:"#e4dcc1",t5:"#cbe6b8",t6:"#dae4b0",t7:"#bcdca9",t8:"#d8dccb"};
+  const shade=(hex,a)=>{tC.set(hex);tC.offsetHSL(0,0,a);return "#"+tC.getHexString()};
+  // 地塊、沙灘、淺灘
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    if(isLand(x,y)){
+      if(isBeach(x,y))put("box",x+.5,-.4,y+.5,1,.5,1,shade("#f0dcab",(r()-.5)*.02),0,0,0,true);
+      else{const k=AKEYS[zone[y*W+x]];put("box",x+.5,-.4,y+.5,1,.6,1,shade(GROUND[k],(r()-.5)*.025),0,0,0,true)}
+    }else if(isLand(x+1,y)||isLand(x-1,y)||isLand(x,y+1)||isLand(x,y-1)||isLand(x+1,y+1)||isLand(x-1,y-1)||isLand(x+1,y-1)||isLand(x-1,y+1)){
+      put("box",x+.5,-.06,y+.5,1,.03,1,"#ade0e6",0,0,0,true);
+    }
+  }
+  // 道路：各區中心連到中央廣場，廣場連到碼頭
+  const roadOcc=new Uint8Array(W*H);
+  const road=(a,b)=>{const ax=a[0]+.5,az=a[1]+.5,bx=b[0]+.5,bz=b[1]+.5,dx=bx-ax,dz=bz-az,L=Math.hypot(dx,dz),ry=Math.atan2(dx,dz);
+    put("box",(ax+bx)/2,GY,(az+bz)/2,.95,.025,L,"#c9ced4",ry,0,0,true);
+    for(let s=.6;s<L-.6;s+=.9)put("box",ax+dx*s/L,GY+.026,az+dz*s/L,.07,.01,.36,"#ffffff",ry,0,0,true);
+    for(let s=0;s<=L;s+=.3){const tx=Math.floor(ax+dx*s/L),tz=Math.floor(az+dz*s/L);for(let oy=-1;oy<=1;oy++)for(let ox=-1;ox<=1;ox++){if(Math.abs(ox)+Math.abs(oy)<2)roadOcc[(tz+oy)*W+tx+ox]=1}}};
+  AKEYS.forEach(k=>{if(k!=="t5")road(ZC[k],ZC.t5)});
+  if(dock)road(ZC.t5,[dock[0],dock[1]-1]);
+
+  // 小元件
+  const tree=(x,z,s)=>{s=s||1;put("cyl",x,GY,z,.13*s,.6*s,.13*s,"#b39878");put("ico",x,GY+.9*s,z,.95*s,1.05*s,.95*s,r()<.5?"#a5d8a0":"#8dca94",r()*3,r()*3);
+    if(r()<.14)put("ico",x+.18*s,GY+1.25*s,z+.1*s,.42*s,.42*s,.42*s,"#f2ae8a",r()*3)};
+  const bush=(x,z)=>put("ico",x,GY+.18,z,.55,.42,.55,"#b2dca9",r()*3,r()*3);
+  const palm=(x,z)=>{const h=1.1+r()*.5;put("cyl",x,GY,z,.09,h,.09,"#c2a785");for(let i=0;i<6;i++){const a=i/6*Math.PI*2+r()*.4;put("box",x+Math.sin(a)*.28,GY+h-.02,z+Math.cos(a)*.28,.16,.035,.62,"#bfe2b2",a,-.42)}};
+  const grass=(x,z)=>{for(let i=0;i<3;i++)put("box",x+(r()-.5)*.3,GY,z+(r()-.5)*.3,.035,.16+r()*.14,.035,"#a3cf8f",0,(r()-.5)*.6,(r()-.5)*.6,true)};
+  const flowers=(x,z)=>{const c=["#f4a68f","#f5d46e","#cdb6ee","#ffffff"][r()*4|0];for(let i=0;i<3;i++){const fx=x+(r()-.5)*.45,fz=z+(r()-.5)*.45;put("box",fx,GY,fz,.03,.22,.03,"#93c483",0,0,0,true);put("box",fx,GY+.22,fz,.1,.06,.1,c,0,0,0,true)}};
+  const house=(x,z,roof,ry,s)=>{s=s||1;put("box",x,GY,z,.9*s,.62*s,.82*s,"#faf8f3",ry);put("roof",x,GY+.62*s,z,1.0*s,.48*s,.92*s,roof,ry)};
+  const ROOFS=["#f2b896","#a9cdea","#f3e2aa","#f2b896"];
+  const shop=(x,z,aw)=>{put("box",x,GY,z,.9,.72,.8,"#fbf8f1");put("box",x,GY+.72,z,.98,.07,.88,"#e3d9c6");put("box",x,GY+.46,z+.44,.9,.05,.2,aw,0,.38);put("box",x,GY,z+.41,.3,.42,.02,"#9db7c4")};
+  const stall=(x,z,c)=>{for(const[ox,oz]of[[-.3,-.25],[.3,-.25],[-.3,.25],[.3,.25]])put("box",x+ox,GY,z+oz,.05,.6,.05,"#b9a17f");put("box",x,GY+.6,z,.75,.06,.6,c);put("box",x,GY+.66,z,.55,.06,.4,"#ffffff");put("box",x,GY,z+.15,.6,.3,.25,"#d8b68a")};
+  const bench=(x,z,ry)=>{put("box",x,GY+.15,z,.7,.06,.22,"#c7a27b",ry);put("box",x,GY,z,.06,.15,.2,"#9b7a58",ry)};
+  const lot=(x,z)=>put("box",x,GY,z,.9,.02,.9,"#e3d2b2",0,0,0,true);
+  const sign=(x,z)=>{put("box",x,GY,z,.06,.7,.06,"#a88b6a");put("box",x,GY+.55,z,.55,.32,.05,"#ffffff");put("box",x,GY+.7,z+.03,.4,.05,.01,"#e0574a",0,0,0,true)};
+  const field=(x,z,y)=>{put("box",x,GY,z,1,.03,1,"#dcc59b",0,0,0,true);for(let i=0;i<3;i++)put("box",x,GY+.03,z-.32+i*.32,.9,.13,.15,y%2?"#bfe08c":"#efd77f",0,0,0,true)};
+  const plaza=(x,z,d)=>put("disc",x,GY,z,d,.02,d,"#f1eee4",0,0,0,true);
+
+  // 散布
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
+    if(!isLand(x,y))continue;const cx0=x+.5+(r()-.5)*.3,cz0=y+.5+(r()-.5)*.3;
+    if(isBeach(x,y)){if(r()<.06)palm(cx0,cz0);continue}
+    if(r()<.45)grass(x+r(),y+r());
+    if(r()<.07)flowers(x+.5,y+.5);
+    if(occ[y*W+x]||roadOcc[y*W+x])continue;
+    const k=AKEYS[zone[y*W+x]],v=r();
+    if(k==="t7"){if(v<.42)tree(cx0,cz0,.9+r()*.4);else if(v<.55)bush(cx0,cz0)}
+    else if(k==="t1"){if(v<.15)house(cx0,cz0,ROOFS[r()*4|0],(r()<.5?0:Math.PI/2));else if(v<.24)tree(cx0,cz0);else if(v<.3)bush(cx0,cz0)}
+    else if(k==="t2"){if((x+y)%7<4&&v<.8)field(x+.5,y+.5,y);else if(v<.9)tree(cx0,cz0,.8)}
+    else if(k==="t3"){if(v<.13)palm(cx0,cz0);else if(v<.18)stall(cx0,cz0,r()<.5?"#9fd0e6":"#f4b49a");else if(v<.24)bush(cx0,cz0)}
+    else if(k==="t4"){if(v<.17)shop(cx0,cz0,["#e0574a","#57a7c2","#f0c25a"][r()*3|0]);else if(v<.22)tree(cx0,cz0,.8)}
+    else if(k==="t5"){if(v<.08)plaza(x+.5,y+.5,1.6);else if(v<.17)tree(cx0,cz0);else if(v<.21)bench(cx0,cz0,r()*3)}
+    else if(k==="t6"){if(v<.06)house(cx0,cz0,"#e9a07f",0);else if(v<.2)tree(cx0,cz0);else if(v<.26)bush(cx0,cz0)}
+    else if(k==="t8"){if(v<.08)lot(x+.5,y+.5);else if(v<.13)sign(cx0,cz0);else if(v<.17)put("box",cx0,GY,cz0,.8,1.1+r()*.8,.8,"#e9eef2");else if(v<.22)bush(cx0,cz0)}
+  }
+  // 地標
+  const C=k=>[ZC[k][0]+.5,ZC[k][1]+.5];
+  {const[x,z]=C("t1");plaza(x,z,4.4);put("box",x,GY,z,3,1.1,1.3,"#fbf8f1");put("box",x,GY+1.1,z,3.2,.12,1.5,"#a9cdea");for(let i=0;i<5;i++)put("box",x-1.2+i*.6,GY+.5,z+.66,.32,.28,.02,"#a9d3e8",0,0,0,true);put("cyl",x+1.9,GY,z+.6,.05,2,.05,"#dddddd");put("box",x+2.2,GY+1.65,z+.6,.55,.34,.03,"#e0574a")}
+  {const[x,z]=C("t2");put("box",x,GY,z,2.2,1.2,1.6,"#f2d2bb");put("roof",x,GY+1.2,z,2.4,.6,1.8,"#d98e6c");put("cyl",x+.8,GY,z-.4,.35,2.4,.35,"#cfcfcf");put("box",x-.2,GY,z+.81,.5,.7,.02,"#9b7a58")}
+  {const[x,z]=C("t3");plaza(x,z,3.2);for(let i=0;i<5;i++)put("cyl",x,GY+i*.55,z,.7-i*.05,.55,.7-i*.05,i%2?"#e0574a":"#fbfbfb");put("box",x,GY+2.75,z,.6,.45,.6,"#fff3c4");put("cone6",x,GY+3.2,z,.45,.4,.45,"#e0574a")}
+  {const[x,z]=C("t4");put("box",x,GY,z,2.4,1.1,1.5,"#fbfaf6");put("box",x,GY+1.1,z,2.5,.1,1.6,"#7fc59a");put("box",x,GY+.7,z+.78,2.4,.07,.32,"#7fc59a",0,.35);put("box",x-.5,GY,z+.76,.9,.6,.02,"#a9d3e8",0,0,0,true)}
+  {const[x,z]=C("t5");plaza(x,z,5);for(const[ox,oz]of[[-.8,-.8],[.8,-.8],[-.8,.8],[.8,.8]])put("cyl",x+ox,GY,z+oz,.12,1.2,.12,"#c98f6a");put("roof",x,GY+1.2,z,2.4,.8,2.4,"#e9907a");put("box",x,GY,z,1,.35,.5,"#c7a27b")}
+  {const[x,z]=C("t6");plaza(x,z,4.4);put("box",x,GY,z,2.6,.9,1.6,"#fbf3e6");put("box",x,GY+.9,z,3.1,.14,2,"#e0574a");put("box",x,GY+1.04,z,2.6,.35,1.5,"#e57a62");put("box",x,GY+1.39,z,2.9,.1,.6,"#e0574a");put("box",x,GY,z+.81,.6,.6,.02,"#b0543c");for(const ox of[-1.6,1.6])put("box",x+ox,GY+.55,z+.9,.18,.25,.18,"#f5d46e")}
+  {const[x,z]=C("t7");put("cone6",x,GY,z,2.6,2.8,2.6,"#9bcf98");put("cone6",x,GY+2.1,z,.95,.7,.95,"#ffffff");put("cone6",x+2,GY,z+.8,1.6,1.7,1.6,"#b0dba6")}
+  {const[x,z]=C("t8");plaza(x,z,4);put("box",x,GY,z,1.6,3,1.6,"#dfe8ee");for(let ry=0;ry<5;ry++)for(let cx2=0;cx2<3;cx2++)put("box",x-.5+cx2*.5,GY+.4+ry*.5,z+.81,.3,.25,.02,"#a9d3e8",0,0,0,true);put("box",x,GY+3,z,1.7,.12,1.7,"#c7d3dc");put("cyl",x+1.5,GY,z+.5,.05,1.8,.05,"#aaaaaa");put("box",x+1.5,GY+1.5,z+.5,.9,.6,.05,"#ffffff")}
+  // 碼頭
+  if(dock){for(let i=0;i<4;i++)put("box",dock[0]+.5,GY-.15,dock[1]+.5+i,.8,.1,.95,"#c9a37a");for(let i=0;i<4;i++)for(const ox of[-.38,.38])put("cyl",dock[0]+.5+ox,-.4,dock[1]+1+i,.1,.55,.1,"#9b7a58")}
+  flush();
+})();
+
+/* 旗子（問題） */
+const flagGroup=new THREE.Group();scene.add(flagGroup);
+let placed=[],cloths=[];
+const SELMAT=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.75});
+const selRing=new THREE.Mesh(G.disc,SELMAT);selRing.scale.set(1.8,.02,1.8);selRing.visible=false;scene.add(selRing);
+function mk(geo,c,x,y,z,sx,sy,sz,parent,mat){const m=new THREE.Mesh(G[geo],mat||M(c));m.position.set(x,y,z);m.scale.set(sx,sy,sz);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m}
+function addFlag(parent,x,z,h,color){mk("cyl","#f4f4f4",x,0,z,.06,h,.06,parent);const pivot=new THREE.Group();pivot.position.set(x,h-.42,z);parent.add(pivot);mk("box",color,.3,0,0,.58,.36,.03,pivot);cloths.push(pivot);return pivot}
+function hash(s){let h=2166136261;for(const c of String(s))h=Math.imul(h^c.charCodeAt(0),16777619);return h}
+function placeProblems(){
+  const used={};AKEYS.forEach(k=>used[k]=0);
+  placed=S.problems.slice().sort((a,b)=>(+a.no||999)-(+b.no||999)||(a.at||0)-(b.at||0)).map(p=>{
+    const k=AREAS[p.area]?p.area:"t1";const sl=SLOTS[k];let pos;
+    if(used[k]<sl.length)pos=sl[used[k]];else{const rr=rng(hash(p.id));const c=ZC[k];pos=[c[0]+Math.round((rr()-.5)*10),c[1]+Math.round((rr()-.5)*8)];if(!isLand(pos[0],pos[1]))pos=c}
+    used[k]++;return{p,x:pos[0]*T+8,y:pos[1]*T+14,wx:pos[0]+.5,wz:pos[1]+.5,n:solsFor(p.id).length}});
+  buildFlags();
+}
+function buildFlags(){
+  while(flagGroup.children.length)flagGroup.remove(flagGroup.children[0]);
+  cloths=[];
+  const rr=rng(9);
+  placed.forEach(it=>{
+    const g=new THREE.Group();g.position.set(it.wx,GY,it.wz);flagGroup.add(g);
+    const col=(AREAS[it.p.area]||AREAS.t1).color,n=it.n;
+    if(n===0){mk("disc","#f6cdc4",0,0,0,.9,.03,.9,g);addFlag(g,0,0,1.55,"#e0574a")}
+    else if(n<3){for(const[ox,oz]of[[-.38,-.32],[.38,-.32],[-.38,.32],[.38,.32]])mk("box","#d9b48a",ox,0,oz,.06,1,.06,g);
+      mk("box","#d9b48a",0,.5,.32,.82,.05,.05,g);mk("box","#d9b48a",0,.95,.32,.82,.05,.05,g);mk("box","#faf8f3",0,0,0,.7,.38,.58,g);
+      addFlag(g,.38,-.32,1.6,col)}
+    else{mk("box","#faf8f3",0,0,0,.95,.7,.82,g);mk("roof",col,0,.7,0,1.05,.5,.95,g);
+      for(const ox of[-.22,.22])mk("box","",ox,.32,.42,.2,.18,.02,g,GLOW);mk("box","#b8977a",0,0,.42,.18,.32,.02,g);addFlag(g,.55,-.3,1.7,col)}
+    for(let i=0;i<Math.min(n,6);i++){const a=i*1.05+.4,sx=Math.cos(a)*.95,sz=Math.sin(a)*.6+.15;mk("cyl","#b39878",sx,0,sz,.06,.22,.06,g);mk("ico","#8dca94",sx,.36,sz,.36,.36,.36,g)}
+  });
+  buildBadges();
+}
+
+/* 人物 */
+const avG=new THREE.Group();scene.add(avG);
+let spawn=nearestLand(ZC.t5[0],ZC.t5[1]+4);
+for(let i=0;i<20;i++){const sx=spawn[0]+Math.round((Math.random()-.5)*6),sy=spawn[1]+Math.round((Math.random()-.5)*4);if(isLand(sx,sy)&&!isBeach(sx,sy)){spawn=[sx,sy];break}}
+const av={x:spawn[0]*T+8,y:spawn[1]*T+10,tx:null,ty:null,dir:0,walk:0,goal:null};
+function buildPerson(g,shirt,hair,pants){
+  const L=mk("box",pants,-.09,0,0,.15,.34,.17,g),R=mk("box",pants,.09,0,0,.15,.34,.17,g);
+  mk("box",shirt,0,.34,0,.44,.38,.27,g);mk("box","#f0c8a4",-.28,.38,0,.1,.32,.13,g);mk("box","#f0c8a4",.28,.38,0,.1,.32,.13,g);
+  mk("box","#f0c8a4",0,.72,0,.34,.32,.32,g);mk("box",hair,0,.98,0,.37,.1,.37,g);mk("box",hair,0,.74,-.15,.36,.26,.08,g);
+  mk("box","#2b2b2b",-.08,.84,.165,.05,.05,.01,g);mk("box","#2b2b2b",.08,.84,.165,.05,.05,.01,g);
+  return[L,R];
+}
+const[legL,legR]=buildPerson(avG,"#5aa9b5","#5b3e2c","#3d4f6e");
+// 其他線上同學
+const others=new Map();
+const SHIRTS=["#f2a07b","#a68ad8","#7cc58f","#f0c45a","#e78aa8","#7fb2e5","#c9a27e"],HAIRS=["#2b2018","#5b3e2c","#8a5a3a","#1f1f2b"];
+function setPlayers(list){
+  const seen=new Set();
+  list.forEach(p=>{if(!p||!p.k)return;seen.add(p.k);let o=others.get(p.k);
+    if(!o){const g=new THREE.Group();const h=hash(p.k)>>>0;const legs=buildPerson(g,SHIRTS[h%SHIRTS.length],HAIRS[(h>>4)%HAIRS.length],"#4a5568");scene.add(g);
+      const el=document.createElement("div");el.className="other";labelsEl.appendChild(el);
+      o={g,legs,el,x:p.x,y:p.y,dir:p.d||0,walk:0};others.set(p.k,o)}
+    o.el.textContent=p.name||"同學";o.tx=p.x;o.ty=p.y;o.td=p.d||0});
+  for(const[k,o]of others)if(!seen.has(k)){scene.remove(o.g);o.el.remove();others.delete(k)}
+  $("sOnline").textContent=others.size+1;
+}
+function stepOthers(dt,t){
+  for(const o of others.values()){
+    const dx=o.tx-o.x,dy=o.ty-o.y,d=Math.hypot(dx,dy);
+    if(d>400){o.x=o.tx;o.y=o.ty;o.walk=0}
+    else if(d>1.5){const st=Math.min(d,Math.max(60,d*.9)*dt);o.x+=dx/d*st;o.y+=dy/d*st;o.dir=Math.atan2(dx,dy);o.walk=.15}
+    else{o.walk=Math.max(0,o.walk-dt);if(o.walk===0)o.dir=o.td}
+    o.g.position.set(o.x/T,GY+(o.walk>0?Math.abs(Math.sin(t*12))*.06:0),o.y/T);o.g.rotation.y=o.dir;
+    const sw=o.walk>0?Math.sin(t*12)*.06:0;o.legs[0].position.z=sw;o.legs[1].position.z=-sw;
+  }
+}
+
+/* 標籤（HTML 疊在畫面上） */
+const zoneEls={};
+AKEYS.forEach(k=>{const d=document.createElement("div");d.className="zl";d.innerHTML=`<i style="background:${AREAS[k].color}"></i><span class="no">${AREAS[k].ch}</span><span class="nm">${esc(AREAS[k].full)}</span>`;labelsEl.appendChild(d);zoneEls[k]=d});
+const meEl=document.createElement("div");meEl.className="me";meEl.textContent="我";meEl.title="你";labelsEl.appendChild(meEl);
+const hintEl=document.createElement("div");hintEl.className="hint";hintEl.hidden=true;labelsEl.appendChild(hintEl);
+let badgeEls=[];
+function buildBadges(){
+  badgeEls.forEach(b=>b.el.remove());badgeEls=[];
+  placed.forEach(it=>{const b=document.createElement("button");b.type="button";b.className="fb"+(it.n?"":" open");b.style.setProperty("--c",(AREAS[it.p.area]||AREAS.t1).color);
+    b.textContent=(it.p.no?it.p.no+" ":"")+(it.n===0?"🚩":it.n<3?"🔨"+it.n:"🏠"+it.n);b.setAttribute("aria-label",`問題 ${it.p.no||""}：${it.p.title}`);
+    b.addEventListener("click",e=>{e.stopPropagation();goToFlag(it)});labelsEl.appendChild(b);badgeEls.push({el:b,it})});
+}
+const LH={t1:1.9,t2:2.4,t3:4,t4:1.8,t5:2.4,t6:2.2,t7:3.3,t8:3.6};
+function proj(x,y,z){tV.set(x,y,z).project(camera);return{x:(tV.x+1)/2*VW,y:(1-tV.y)/2*VH,ok:tV.z<1&&tV.x>-1.2&&tV.x<1.2&&tV.y>-1.2&&tV.y<1.2}}
+function place(el,p,dy){if(!p.ok){el.style.display="none";return}el.style.display="";el.style.transform=`translate(${p.x.toFixed(1)}px,${(p.y-(dy||0)).toFixed(1)}px) translate(-50%,-100%)`}
+function updateLabels(){
+  const far=overview||curD>46,compact=overview&&VW<640;
+  AKEYS.forEach(k=>{const el=zoneEls[k];el.classList.toggle("compact",compact);place(el,proj(ZC[k][0]+.5,GY+LH[k],ZC[k][1]+.5),6)});
+  badgeEls.forEach(({el,it})=>{if(far){el.style.display="none";return}el.classList.toggle("sel",it.p.id===selId);const h=it.n>=3?1.9:it.n>0?1.8:1.75;place(el,proj(it.wx,GY+h,it.wz),2)});
+  place(meEl,proj(av.x/T,GY+1.45,av.y/T),6);
+  for(const o of others.values()){if(overview&&VW<640){o.el.style.display="none";continue}place(o.el,proj(o.x/T,GY+1.45,o.y/T),6)}
+  const near=nearest(28);
+  if(near&&$("panel").hidden&&!overview){hintEl.hidden=false;hintEl.textContent="點旗子或按 E 查看";place(hintEl,proj(near.wx,GY+2.3,near.wz),18)}else hintEl.hidden=true;
+}
+
+/* 鏡頭 */
+let yaw=0,D=smallScreen?32:30,curD=D;const PITCH=0.88;const camT=new THREE.Vector3(av.x/T,0,av.y/T);
+function overviewDist(){const t=Math.tan(camera.fov*Math.PI/360);return Math.max(W*1.04/(2*t*camera.aspect),H*1.45/(2*t))}
+function updateCamera(dt){
+  const tx=overview?W/2:av.x/T,tz=overview?H/2+2:av.y/T,d=overview?overviewDist():D,k=Math.min(1,dt*4);
+  camT.x+=(tx-camT.x)*k;camT.z+=(tz-camT.z)*k;curD+=(d-curD)*k;
+  camera.position.set(camT.x+Math.sin(yaw)*Math.cos(PITCH)*curD,Math.sin(PITCH)*curD,camT.z+Math.cos(yaw)*Math.cos(PITCH)*curD);
+  camera.lookAt(camT.x,0,camT.z);scene.fog.near=curD*1.4;scene.fog.far=curD*3.4;
+}
+function resize(){const r=host.getBoundingClientRect();VW=Math.max(1,r.width);VH=Math.max(1,r.height);if(renderer)renderer.setSize(VW,VH,false);camera.aspect=VW/VH;camera.updateProjectionMatrix()}
+new ResizeObserver(resize).observe(host);resize();
+
+/* 移動 */
+function nearest(r){let b=null,bd=r;placed.forEach(it=>{const d=Math.hypot(it.x-av.x,it.y-av.y);if(d<bd){bd=d;b=it}});return b}
+const keys={};
+function stepAvatar(dt){
+  let ix=0,iy=0,vx=0,vy=0;const sp=72;
+  if(keys.ArrowLeft||keys.a)ix-=1;if(keys.ArrowRight||keys.d)ix+=1;if(keys.ArrowUp||keys.w)iy-=1;if(keys.ArrowDown||keys.s)iy+=1;
+  if(ix||iy){av.tx=null;av.goal=null;overview=false;vx=ix*Math.cos(yaw)+iy*Math.sin(yaw);vy=-ix*Math.sin(yaw)+iy*Math.cos(yaw)}
+  else if(av.tx!=null){const dx=av.tx-av.x,dy=av.ty-av.y,d=Math.hypot(dx,dy);if(d<2){av.tx=null;if(av.goal){openProblem(av.goal);av.goal=null}}else{vx=dx/d;vy=dy/d}}
+  const m=Math.hypot(vx,vy);
+  if(m){vx/=m;vy/=m;const nx=av.x+vx*sp*dt,ny=av.y+vy*sp*dt;
+    const ok=(x,y)=>isLand(Math.floor(x/T),Math.floor(y/T));
+    if(ok(nx,ny)){av.x=nx;av.y=ny}else if(ok(nx,av.y))av.x=nx;else if(ok(av.x,ny))av.y=ny;else{av.tx=null;if(av.goal){openProblem(av.goal);av.goal=null}}
+    av.dir=Math.atan2(vx,vy);av.walk=.15;lastMove=Date.now()}else av.walk=Math.max(0,av.walk-dt);
+}
+function goToFlag(it){
+  if(overview){overview=false;av.x=it.x;av.y=it.y+10;openProblem(it.p.id);return}
+  if(Math.hypot(it.x-av.x,it.y-av.y)<40)openProblem(it.p.id);else{av.tx=it.x;av.ty=it.y+8;av.goal=it.p.id}
+}
+const ray=new THREE.Raycaster(),gPlane=new THREE.Plane(new THREE.Vector3(0,1,0),-GY),ndc=new THREE.Vector2(),hitP=new THREE.Vector3();
+function clickAt(cx2,cy2){
+  const r=host.getBoundingClientRect(),sx=cx2-r.left,sy=cy2-r.top;
+  let hit=null,bd=30;placed.forEach(it=>{const p=proj(it.wx,GY+.8,it.wz);if(!p.ok)return;const d=Math.hypot(p.x-sx,p.y-sy);if(d<bd){bd=d;hit=it}});
+  if(hit){goToFlag(hit);return}
+  if(overview){overview=false}
+  ndc.set(sx/VW*2-1,-(sy/VH)*2+1);ray.setFromCamera(ndc,camera);
+  if(ray.ray.intersectPlane(gPlane,hitP)){av.tx=hitP.x*T;av.ty=hitP.z*T;av.goal=null}
+}
+// 指標：點一下＝走過去；拖曳＝旋轉視角；兩指＝縮放
+const ptrs=new Map();let drag=null,pinch=0;
+if(renderer){const el=renderer.domElement;
+  el.addEventListener("pointerdown",e=>{try{el.setPointerCapture(e.pointerId)}catch(_){}ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(ptrs.size===1)drag={x:e.clientX,y:e.clientY,yaw,moved:false};else if(ptrs.size===2){const[a,b]=[...ptrs.values()];pinch=Math.hypot(a.x-b.x,a.y-b.y);if(drag)drag.moved=true}});
+  el.addEventListener("pointermove",e=>{if(!ptrs.has(e.pointerId))return;ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(ptrs.size===2){const[a,b]=[...ptrs.values()];const nd=Math.hypot(a.x-b.x,a.y-b.y);if(pinch>0){D=Math.min(70,Math.max(10,D*pinch/nd));overview=false}pinch=nd}
+    else if(drag){const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(!drag.moved&&Math.hypot(dx,dy)>7)drag.moved=true;if(drag.moved)yaw=drag.yaw-dx*0.008}});
+  const up=e=>{const wasClick=drag&&!drag.moved&&ptrs.size===1;ptrs.delete(e.pointerId);if(wasClick&&e.type==="pointerup")clickAt(e.clientX,e.clientY);if(!ptrs.size){drag=null;pinch=0}};
+  el.addEventListener("pointerup",up);el.addEventListener("pointercancel",up);
+  el.addEventListener("wheel",e=>{e.preventDefault();overview=false;D=Math.min(70,Math.max(10,D*(1+e.deltaY*0.001)))},{passive:false});
+}
+window.addEventListener("keydown",e=>{if(e.target.closest&&e.target.closest("input,textarea,select"))return;
+  const k=e.key.length===1?e.key.toLowerCase():e.key;
+  if(["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","w","a","s","d"].includes(k)){keys[k]=true;e.preventDefault()}
+  if(k==="q")yaw+=.3;if(k==="r")yaw-=.3;
+  if(k==="e"){const n=nearest(34);if(n)openProblem(n.p.id)}
+  if(k==="Escape")closePanel();
+});
+window.addEventListener("keyup",e=>{const k=e.key.length===1?e.key.toLowerCase():e.key;keys[k]=false});
+window.addEventListener("blur",()=>{for(const k in keys)keys[k]=false});
+$("zIn").onclick=()=>{overview=false;D=Math.max(10,D/1.25)};
+$("zOut").onclick=()=>{overview=false;D=Math.min(70,D*1.25)};
+$("zAll").onclick=()=>{overview=!overview};
+$("zRot").onclick=()=>{yaw=0};
+
+/* 動畫 */
+let lastT=0;
+function frame(ts){
+  const t=ts/1000,dt=Math.min(.05,t-(lastT||t));lastT=t;
+  stepAvatar(dt);stepOthers(dt,t);
+  avG.position.set(av.x/T,GY+(av.walk>0?Math.abs(Math.sin(t*12))*.06:0),av.y/T);avG.rotation.y=av.dir;
+  const sw=av.walk>0?Math.sin(t*12)*.06:0;legL.position.z=sw;legR.position.z=-sw;
+  cloths.forEach((c,i)=>{c.rotation.y=Math.sin(t*3+i*1.7)*.28});
+  const sel=placed.find(it=>it.p.id===selId);
+  if(sel){selRing.visible=true;selRing.position.set(sel.wx,GY+.01,sel.wz);const s=1.7+Math.sin(t*4)*.15;selRing.scale.set(s,.02,s)}else selRing.visible=false;
+  updateCamera(dt);
+  if(renderer)renderer.render(scene,camera);
+  updateLabels();
+  requestAnimationFrame(frame);
+}
+
+/* ---------- 面板 ---------- */
+const panel=$("panel"),pHead=$("pHead"),pBody=$("pBody");
+let panelView=null;
+const hasId=()=>!!(S.nick&&S.real);
+function openPanel(view){if(!hasId()&&view.type!=="nick"&&view.type!=="admin")view={type:"nick"};panelView=view;$("pClose").hidden=false;panel.hidden=false;renderPanel()}
+function closePanel(){if(panelView&&panelView.type==="nick"&&!hasId())return;panel.hidden=true;panelView=null;selId=null}
+$("pClose").onclick=closePanel;
+function openProblem(id){selId=id;openPanel({type:"problem",id})}
+function toast(m){const t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2800)}
+async function names(ids){if(!S.user||S.mode!=="db")return{};try{return await S.user.profiles([...new Set(ids)])}catch(e){return{}}}
+const draft={uses:[]};
+
+async function renderPanel(){
+  if(!panelView||panel.hidden)return;const v=panelView;
+  if(v.type==="problem"){
+    const p=S.problems.find(x=>x.id===v.id);if(!p){closePanel();return}
+    const a=AREAS[p.area]||AREAS.t1;const sols=solsFor(p.id).map(s=>({...s,v:voteCount(s.id)})).sort((x,y)=>y.v-x.v||x.at-y.at);
+    const ps=await names(sols.map(s=>s.by).concat(p.by||[]));
+    const nm=id=>id===myId()?"你":((ps[id]&&ps[id].name)||"同學");
+    pHead.innerHTML=`<span class="area" style="--c:${a.css}">${a.name}</span><span class="place">${esc(a.q)}${p.no?"・#"+esc(p.no):""}${p.place?"・"+esc(p.place):""}</span><h2>${esc(p.title)}</h2>`;
+    const n=sols.length,state=n===0?"🚩 還沒有人提出解方，搶先插下第一棵樹":n<3?`🔨 施工中：已有 ${n} 個解方，再 ${3-n} 個就能蓋起亮燈小屋`:`🏠 已蓋成亮燈小屋：${n} 個解方`;
+    const canMod=S.isOwner||S.canEdit||S.mode==="local";
+    pBody.innerHTML=`
+      ${p.desc?`<p class="desc">${esc(p.desc)}</p>`:""}
+      <div class="state">${state}</div>
+      <section><h3 style="margin:0 0 8px;font-size:16px">大家的解方</h3>
+        ${n?`<ul class="sol-list">${sols.map(s=>`<li class="sol"><div class="t">${esc(s.text)}${s.value?`<div class="muted" style="font-size:13px;margin-top:4px">💼 ${esc(s.value)}</div>`:""}</div>
+          <button class="vote" data-vote="${esc(s.id)}" aria-pressed="${iVoted(s.id)}" aria-label="支持這個解方，目前 ${s.v} 票">👍 ${s.v}</button>
+          <div class="meta">${(s.uses||[]).map(k=>RES[k]?`<span class="mini" style="--c:${RES[k].css}">${RES[k].ch}</span>`:"").join("")}<span>· ${esc(s.by==="me"?"你":(s.name||"同學"))}</span>
+          ${(canMod||s.by===myId())?`<button class="del" data-delsol="${esc(s.id)}">刪除</button>`:""}</div></li>`).join("")}</ul>`
+          :`<div class="empty">這裡還很空。你的想法會在旗子旁邊長出第一棵樹。</div>`}
+      </section>
+      <form class="form" id="solForm">
+        <h3>提出你的解方</h3>
+        <label class="lb" for="solText">你會怎麼解決這個問題？
+          <textarea id="solText" maxlength="500">${esc(draft.text||"")}</textarea></label>
+        <div class="lb">這個解方用到了哪些地方資源？（人文地產景，可複選）
+          <div class="uses">${RKEYS.map(k=>`<button type="button" class="chipbtn" style="--c:${RES[k].css}" data-use="${k}" aria-pressed="${draft.uses.includes(k)}">${RES[k].ch} ${RES[k].full}</button>`).join("")}</div></div>
+        <div class="err" id="solErr"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" type="submit" ${S.readOnly?"disabled":""}>種下解方 🌱</button>
+          ${S.mode==="local"?`<button class="btn" type="button" id="copyMine">複製我的解方</button>`:""}</div>
+      </form>
+      ${S.isOwner||p.by==="me"?`<button class="del" data-delprob="${esc(p.id)}" style="align-self:flex-start">刪除這個問題</button>`:""}`;
+    bindProblem(p);
+  }
+  if(v.type==="list"){
+    const f=v.filter||"all";
+    const list=S.problems.filter(p=>f==="all"||(f==="open"?solsFor(p.id).length===0:p.area===f));
+    pHead.innerHTML=`<h2 style="margin:0">問題清單</h2><span class="place" style="margin:0">點一題，人物會走過去</span>`;
+    pBody.innerHTML=`<div class="filters">${[["all","全部"],["open","🚩 待解"]].concat(AKEYS.map(k=>[k,AREAS[k].ch])).map(([k,l])=>`<button class="chipbtn" style="--c:${AREAS[k]?AREAS[k].css:"var(--ink)"}" data-filter="${k}" aria-pressed="${f===k}">${l}</button>`).join("")}</div>
+      ${list.length?`<ul class="plist">${list.map(p=>{const a=AREAS[p.area]||AREAS.t1,n=solsFor(p.id).length;return `<li><button data-go="${esc(p.id)}"><span class="mini" style="--c:${a.css}">${p.no?esc(p.no):a.ch}</span><span>${esc(p.title)}</span><span class="n">${n?"🌱"+n:"🚩"}</span></button></li>`}).join("")}</ul>`:`<div class="empty">這個分類目前沒有問題。</div>`}`;
+    pBody.querySelectorAll("[data-filter]").forEach(b=>b.onclick=()=>{panelView.filter=b.dataset.filter;renderPanel()});
+    pBody.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{const it=placed.find(x=>x.p.id===b.dataset.go);if(!it)return;overview=false;closePanel();av.tx=it.x;av.ty=it.y+8;av.goal=it.p.id;if(Math.hypot(it.x-av.x,it.y-av.y)>500){av.x=it.x;av.y=it.y+10}});
+  }
+  if(v.type==="add"){
+    pHead.innerHTML=`<h2 style="margin:0">插一面問題旗</h2><span class="place" style="margin:0">把你盤點到的地方問題放上島</span>`;
+    pBody.innerHTML=`<form class="form" id="addForm">
+      <div class="lb">這個問題屬於哪個主題？<div class="uses">${AKEYS.map((k,i)=>`<button type="button" class="chipbtn" style="--c:${AREAS[k].css}" data-area="${k}" aria-pressed="${i===0}">${AREAS[k].ch} ${AREAS[k].full}</button>`).join("")}</div></div>
+      <label class="lb" for="apPlace">地點（鄉鎮或村里，選填）<input type="text" id="apPlace" maxlength="40" placeholder="例如：臺南市後壁區"></label>
+      <label class="lb" for="apTitle">問題（一句話）<input type="text" id="apTitle" maxlength="80" placeholder="例如：稻米收購價低，年輕人不願接手農地"></label>
+      <label class="lb" for="apDesc">補充說明（選填）<textarea id="apDesc" maxlength="400" placeholder="你觀察到什麼？訪談到誰？"></textarea></label>
+      <div class="err" id="apErr"></div><button class="btn primary" type="submit" ${S.readOnly?"disabled":""}>插上旗子 🚩</button></form>`;
+    let area="t1";pBody.querySelectorAll("[data-area]").forEach(b=>b.onclick=()=>{area=b.dataset.area;pBody.querySelectorAll("[data-area]").forEach(x=>x.setAttribute("aria-pressed",x===b))});
+    $("addForm").onsubmit=async e=>{e.preventDefault();const title=$("apTitle").value.trim();if(title.length<4){$("apErr").textContent="問題至少寫 4 個字。";return}
+      try{await addProblem({area,place:$("apPlace").value.trim(),title,desc:$("apDesc").value.trim()});toast("旗子插好了，去島上找找看");closePanel();overview=true}catch(err){$("apErr").textContent=failWrite(err)}};
+  }
+  if(v.type==="admin"&&!S.isOwner){
+    pHead.innerHTML=`<h2 style="margin:0">老師登入</h2><span class="place" style="margin:0">登入後可以匯入問題、刪除任何內容</span>`;
+    pBody.innerHTML=S.adminEnabled===false?`<div class="empty">還沒有設定老師密碼。請到 Netlify 網站設定的 Environment variables 新增 ADMIN_PASSWORD，再重新部署一次。</div>`
+      :`<form class="form" id="loginForm"><label class="lb" for="pw">老師密碼<input type="password" id="pw" autocomplete="current-password"></label><div class="err" id="pwErr"></div><button class="btn primary" type="submit">登入</button></form>`;
+    const lf=$("loginForm");
+    if(lf)lf.onsubmit=async e=>{e.preventDefault();const pw=$("pw").value;
+      try{const d=await api("admin",{password:pw});if(d.ok){S.adminPw=pw;S.isOwner=true;$("bAdmin").textContent="老師後台";setNotice();renderPanel()}else $("pwErr").textContent="密碼不對，請再試一次。"}
+      catch(err){$("pwErr").textContent="登入失敗，請檢查網路後再試一次。"}};
+  }
+  else if(v.type==="admin"){
+    pHead.innerHTML=`<h2 style="margin:0">老師後台</h2><span class="place" style="margin:0">把學生盤點的問題一次放上島</span>`;
+    pBody.innerHTML=`<div class="form"><h3>課堂的 40 個問題</h3><p class="muted" style="margin:0;font-size:13px">一鍵把 8 個主題、40 個問題插上島，學生就能直接開始提解方。</p>
+      <button class="btn primary" id="presetBtn" type="button">放上課堂的 40 個問題</button><div class="err" id="presetErr"></div></div>
+      <div class="form"><h3>學生解方紀錄（評分用）</h3><p class="muted" style="margin:0;font-size:13px">依姓名或學號整理每位學生提出的解方和獲得的讚數。可以複製成表格，直接貼到 Excel 或 Google 試算表。</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" id="rosterBtn" type="button">查看紀錄</button><button class="btn" id="rosterSum" type="button" hidden>複製總表</button><button class="btn" id="rosterDet" type="button" hidden>複製明細</button></div>
+      <div class="err" id="rosterErr"></div><div id="roster" class="roster"></div><div class="copybox" id="rosterBox" hidden></div></div>
+      <form class="form" id="impForm"><h3>另外匯入其他問題</h3>
+      <p class="muted" style="margin:0;font-size:13px">一行一個問題，格式：<b>主題編號｜問題｜補充說明</b>。主題編號填 1 到 8；補充說明可以留空。</p>
+      <textarea id="impText" style="min-height:180px" placeholder="2｜稻米收購價低，年輕人不願接手農地｜訪談三戶農家都說沒有接班人&#10;4｜車站前老街店面一半拉下鐵門"></textarea>
+      <div class="err" id="impErr"></div><button class="btn primary" type="submit">匯入到島上</button></form>
+      <div class="muted" style="font-size:13px">目前島上有 ${S.problems.length} 個問題、${S.solutions.length} 個解方。把這個網址分享給學生，他們不用登入就能插旗、提出解方和按讚。</div>
+      <button class="btn" id="exportAll" type="button">複製全部問題與解方</button><div class="copybox" id="exportBox" hidden></div>
+      <div class="form"><h3>清空整座島</h3><p class="muted" style="margin:0;font-size:13px">刪除所有問題、解方和按讚，適合新學期重新開始。刪除後無法復原，建議先按上面的按鈕複製留存。</p>
+      <button class="btn" id="resetBtn" type="button">清空整座島</button><div class="err" id="resetErr"></div></div>`;
+    const armBtn=(b,label,fn)=>{b.onclick=async()=>{if(!b.dataset.armed){b.dataset.armed=1;b.textContent=label;setTimeout(()=>{if(b.isConnected&&b.dataset.armed){delete b.dataset.armed;b.textContent=b.dataset.orig}},4000);return}delete b.dataset.armed;b.disabled=true;try{await fn()}finally{if(b.isConnected){b.disabled=false;b.textContent=b.dataset.orig}}}};
+    const pb=$("presetBtn");pb.dataset.orig=pb.textContent;
+    const runPreset=async()=>{try{await api("import",{password:S.adminPw,items:PRESET.map(([area,no,title])=>({area,no,title}))});await load();toast("已插上 40 面旗子");closePanel();overview=true}catch(err){$("presetErr").textContent=failWrite(err)}};
+    if(S.problems.some(p=>p.no)){armBtn(pb,"島上已有課堂問題，再按一次會重複放上",runPreset)}else{pb.onclick=async()=>{pb.disabled=true;await runPreset();if(pb.isConnected)pb.disabled=false}}
+    const rb=$("resetBtn");rb.dataset.orig=rb.textContent;
+    armBtn(rb,"再按一次確認清空",async()=>{try{await api("reset",{password:S.adminPw});await load();toast("島已清空")}catch(err){$("resetErr").textContent=failWrite(err)}});
+    $("impForm").onsubmit=async e=>{e.preventDefault();const lines=$("impText").value.split(/\n/).map(l=>l.trim()).filter(Boolean);const out=[],bad=[];
+      lines.forEach((l,i)=>{const parts=l.split(/[｜|]/).map(s=>s.trim());const k=themeKey(parts[0]);if(!k||!parts[1]||parts[1].length<4){bad.push(i+1);return}out.push({area:k,title:parts[1],desc:parts.slice(2).join("｜")})});
+      if(bad.length){$("impErr").textContent=`第 ${bad.join("、")} 行格式不對，主題編號要是 1 到 8，而且問題至少 4 個字。`;return}
+      if(!out.length){$("impErr").textContent="請先貼上問題。";return}
+      try{await api("import",{password:S.adminPw,items:out});await load();toast(`已插上 ${out.length} 面旗子`);closePanel();overview=true}catch(err){$("impErr").textContent=failWrite(err)}};
+    $("exportAll").onclick=()=>{const txt=exportText();copy(txt,$("exportBox"))};
+    $("rosterBtn").onclick=async()=>{const b=$("rosterBtn");b.disabled=true;$("rosterErr").textContent="";
+      try{const d=await api("roster",{password:S.adminPw});renderRoster(d)}catch(err){$("rosterErr").textContent=failWrite(err)}finally{b.disabled=false;b.textContent="重新整理紀錄"}};
+  }
+  if(v.type==="nick"){
+    const edit=hasId();$("pClose").hidden=!edit;
+    pHead.innerHTML=`<h2 style="margin:0">${edit?"我的資料":"歡迎來到解方島"}</h2><span class="place" style="margin:0">${edit?"修改後會用在之後提出的解方":"出發前，先登記你是誰"}</span>`;
+    pBody.innerHTML=`<form class="form" id="nickForm">
+      <label class="lb" for="realIn">姓名或學號（只有老師看得到，用來登記成績）<input type="text" id="realIn" maxlength="30" autocomplete="name" value="${esc(S.real)}"></label>
+      <label class="lb" for="nickIn">暱稱（顯示在島上，大家都看得到）<input type="text" id="nickIn" maxlength="20" autocomplete="nickname" value="${esc(S.nick)}"></label>
+      <div class="err" id="nickErr"></div><button class="btn primary" type="submit">${edit?"儲存":"出發！"}</button></form>`;
+    $("nickForm").onsubmit=e=>{e.preventDefault();const rl=$("realIn").value.trim().slice(0,30),n=$("nickIn").value.trim().slice(0,20);
+      if(!rl){$("nickErr").textContent="請輸入姓名或學號，老師才知道是誰提出的解方。";return}
+      if(!n){$("nickErr").textContent="請輸入暱稱。";return}
+      S.real=rl;LS.set("isle_real",rl);S.nick=n;LS.set("isle_nick",n);updateMe();lastSync=0;sync();
+      if(!edit&&!LS.get("isle_seen",0))openPanel({type:"how"});else{closePanel();if(edit)toast("資料已更新")}};
+    setTimeout(()=>{const i=$(S.real?"nickIn":"realIn");if(i&&!edit)i.focus()},60);
+  }
+  if(v.type==="how"){
+    pHead.innerHTML=`<h2 style="margin:0">怎麼玩</h2>`;
+    pBody.innerHTML=`<div class="howto"><ol>
+      <li>點地面讓人物走過去，拖曳可以旋轉視角，滾輪或兩指可以縮放。電腦也可以用方向鍵或 WASD 走路。</li>
+      <li>島分成 8 個主題區，從「人口與青年」到「地方發展與資訊」。每面旗子是課堂上盤點出來的一個地方問題，旗子上的標籤顯示問題編號和解方數量。</li>
+      <li><b>紅旗</b>代表還沒有人提出解方。走過去點旗子，寫下你的解方，並標記它用到哪些地方資源：<b>人、文、地、產、景</b>。</li>
+      <li>每多一個解方，旗子旁就長出一棵樹；累積 3 個解方，紅旗就會蓋成<b>亮燈小屋</b>。</li>
+      <li>島上其他人物是正在線上的同學，頭上會顯示他們的暱稱。</li>
+      <li>看到好點子就按 👍 支持。目標：讓整座島亮起來。</li></ol>
+      <p class="muted" style="font-size:13px;margin-top:12px">好的解方通常會結合兩三種地方資源，而不只是辦一場活動。</p></div>
+      <button class="btn primary" id="howGo" type="button">開始探索</button>`;
+    $("howGo").onclick=()=>{LS.set("isle_seen",1);closePanel()};
+  }
+}
+function bindProblem(p){
+  pBody.querySelectorAll("[data-vote]").forEach(b=>b.onclick=()=>{if(S.readOnly){toast("目前只能瀏覽");return}toggleVote(b.dataset.vote)});
+  pBody.querySelectorAll("[data-use]").forEach(b=>b.onclick=()=>{const k=b.dataset.use;draft.uses=draft.uses.includes(k)?draft.uses.filter(x=>x!==k):draft.uses.concat(k);b.setAttribute("aria-pressed",draft.uses.includes(k))});
+  const armDel=(b,fn)=>{b.onclick=async()=>{if(b.dataset.armed){try{await fn()}catch(e){toast(failWrite(e))}}else{b.dataset.armed=1;b.textContent="再按一次確認刪除";setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent="刪除"}},3000)}}};
+  pBody.querySelectorAll("[data-delsol]").forEach(b=>armDel(b,()=>delSolution(b.dataset.delsol)));
+  pBody.querySelectorAll("[data-delprob]").forEach(b=>armDel(b,async()=>{await delProblem(b.dataset.delprob);closePanel()}));
+  const ta=$("solText");ta.oninput=()=>draft.text=ta.value;
+  $("solForm").onsubmit=async e=>{e.preventDefault();const text=ta.value.trim();
+    if(text.length<10){$("solErr").textContent="解方至少寫 10 個字，說明你要怎麼做。";return}
+    if(!draft.uses.length){$("solErr").textContent="請至少選一個用到的地方資源。";return}
+    const btn=e.submitter||$("solForm").querySelector("[type=submit]");btn.disabled=true;
+    try{await addSolution({problemId:p.id,text,uses:draft.uses.slice()});draft.text="";draft.uses=[];renderPanel()}
+    catch(err){$("solErr").textContent=failWrite(err);btn.disabled=false}};
+  const cm=$("copyMine");if(cm)cm.onclick=()=>{const mine=S.solutions.filter(s=>s.by===myId());if(!mine.length){toast("你還沒有提出解方");return}
+    copy(mine.map(s=>{const pp=S.problems.find(x=>x.id===s.problemId);return `【問題】${pp?pp.title:""}\n【解方】${s.text}\n【用到資源】${(s.uses||[]).map(k=>RES[k]?RES[k].ch:"").join("、")}${s.value?`\n【創造價值】${s.value}`:""}`}).join("\n\n"),null)};
+}
+function renderRoster(d){
+  const P={};(d.problems||[]).forEach(p=>P[p.id]=p);
+  const groups=new Map();
+  (d.solutions||[]).slice().sort((a,b)=>a.at-b.at).forEach(s=>{const key=s.real?"r:"+s.real:"a:"+s.ak;
+    if(!groups.has(key))groups.set(key,{real:s.real,names:new Set(),list:[],votes:0});const g=groups.get(key);g.names.add(s.name||"（無暱稱）");g.list.push(s);g.votes+=s.votes});
+  const rows=[...groups.values()].sort((a,b)=>(a.real||"~").localeCompare(b.real||"~","zh-Hant"));
+  const fmt=t=>{const x=new Date(t);return `${x.getMonth()+1}/${x.getDate()} ${String(x.getHours()).padStart(2,"0")}:${String(x.getMinutes()).padStart(2,"0")}`};
+  const res=s=>(s.uses||[]).map(k=>RES[k]?RES[k].ch:"").join("");
+  $("roster").innerHTML=rows.length?`<div class="muted" style="font-size:13px">共 ${rows.length} 位學生、${(d.solutions||[]).length} 個解方</div>`+rows.map(g=>`<details class="rs"><summary><b>${esc(g.real||"（未填姓名學號）")}</b><span class="muted">${esc([...g.names].join("、"))}</span><span class="rn">${g.list.length} 個解方・👍 ${g.votes}</span></summary>
+      <ol>${g.list.map(s=>{const p=P[s.problemId]||{};return `<li><span class="muted">${p.no?"#"+esc(p.no)+" ":""}${esc((p.title||"（問題已刪除）").slice(0,24))}</span><div>${esc(s.text)}</div><div class="muted" style="font-size:12px">${esc(res(s))}・👍 ${s.votes}・${fmt(s.at)}</div></li>`}).join("")}</ol></details>`).join("")
+    :`<div class="empty">還沒有學生提出解方。</div>`;
+  const clean=t=>String(t??"").replace(/[\t\r\n]+/g," ");
+  const sum=["姓名或學號\t暱稱\t解方數\t獲得讚數"].concat(rows.map(g=>[g.real||"（未填）",[...g.names].join("、"),g.list.length,g.votes].map(clean).join("\t"))).join("\n");
+  const det=["姓名或學號\t暱稱\t問題編號\t問題\t解方\t用到的資源\t讚數\t時間"].concat((d.solutions||[]).slice().sort((a,b)=>(a.real||"~").localeCompare(b.real||"~","zh-Hant")||a.at-b.at).map(s=>{const p=P[s.problemId]||{};return[s.real||"（未填）",s.name,p.no,p.title,s.text,res(s),s.votes,fmt(s.at)].map(clean).join("\t")})).join("\n");
+  const bs=$("rosterSum"),bd=$("rosterDet");bs.hidden=bd.hidden=!rows.length;
+  bs.onclick=()=>copy(sum,$("rosterBox"));bd.onclick=()=>copy(det,$("rosterBox"));
+}
+/* 有人提出解方：全螢幕煙火＋公告 */
+let fw=null;
+function celebrate(list){
+  const s=list[list.length-1],p=S.problems.find(x=>x.id===s.problemId);
+  const who=s.by==="me"?"你":(s.name||"同學");
+  const msg=list.length>1?`有 ${list.length} 個新解方誕生了！`:`${who}在 ${p&&p.no?"#"+p.no+" ":""}提出了解方！`;
+  const el=$("cele");el.querySelector("b").textContent="🎉 "+msg;el.querySelector("span").textContent=p&&list.length===1?p.title:"一起讓島亮起來";
+  el.hidden=false;el.classList.remove("show");void el.offsetWidth;el.classList.add("show");clearTimeout(el._t);el._t=setTimeout(()=>{el.hidden=true},3600);
+  if(!window.matchMedia||!matchMedia("(prefers-reduced-motion: reduce)").matches)fireworks();
+}
+function fireworks(){
+  const cv=$("fw"),g=cv.getContext("2d"),dpr=Math.min(2,window.devicePixelRatio||1);
+  const W2=cv.width=innerWidth*dpr,H2=cv.height=innerHeight*dpr;cv.hidden=false;
+  const COLS=["#ff6b6b","#ffd166","#06d6a0","#4cc9f0","#c77dff","#ff9f68","#ffffff"];
+  const parts=[],bursts=[];const t0=performance.now();
+  for(let i=0;i<7;i++)bursts.push({at:i*260+Math.random()*120,x:(.15+Math.random()*.7)*W2,y:(.15+Math.random()*.35)*H2,done:false});
+  if(fw)cancelAnimationFrame(fw);
+  const step=now=>{const t=now-t0;g.clearRect(0,0,W2,H2);
+    bursts.forEach(b=>{if(!b.done&&t>=b.at){b.done=true;const c=COLS[Math.random()*COLS.length|0],n=70;for(let i=0;i<n;i++){const a=i/n*Math.PI*2,sp=(2+Math.random()*4.5)*dpr;parts.push({x:b.x,y:b.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,c:Math.random()<.25?"#ffffff":c})}}});
+    for(const q of parts){q.x+=q.vx;q.y+=q.vy;q.vy+=.06*dpr;q.vx*=.985;q.vy*=.985;q.life-=.011;if(q.life>0){g.globalAlpha=q.life;g.fillStyle=q.c;g.fillRect(q.x,q.y,3*dpr,3*dpr)}}
+    g.globalAlpha=1;
+    if(t<3800)fw=requestAnimationFrame(step);else{g.clearRect(0,0,W2,H2);cv.hidden=true;fw=null}};
+  fw=requestAnimationFrame(step);
+}
+function exportText(){return S.problems.map(p=>{const a=AREAS[p.area]||AREAS.t1;const ss=solsFor(p.id).map(s=>({...s,v:voteCount(s.id)})).sort((x,y)=>y.v-x.v);
+  return `${a.name}${p.no?" #"+p.no:""}｜${p.title}\n`+(ss.length?ss.map(s=>`  - ${s.text}（${(s.uses||[]).map(k=>RES[k]?RES[k].ch:"").join("")}，👍${s.v}）`).join("\n"):"  （尚無解方）")}).join("\n\n")}
+function copy(txt,box){const done=()=>toast("已複製");
+  const fallback=()=>{const b=box||(()=>{const d=document.createElement("div");d.className="copybox";pBody.appendChild(d);return d})();b.hidden=false;b.textContent=txt;const r=document.createRange();r.selectNodeContents(b);const s=getSelection();s.removeAllRanges();s.addRange(r);toast("已選取文字，請按 Ctrl+C 或長按複製")};
+  try{navigator.clipboard.writeText(txt).then(done,fallback)}catch(e){fallback()}}
+
+$("bList").onclick=()=>openPanel({type:"list",filter:"all"});
+$("bHow").onclick=()=>openPanel({type:"how"});
+$("bMe").onclick=()=>openPanel({type:"nick"});
+function updateMe(){$("meName").textContent=S.nick||"設定暱稱";meEl.textContent=S.nick||"我"}
+$("bAdd").onclick=()=>openPanel({type:"add"});
+$("bAdmin").onclick=()=>openPanel({type:"admin"});
+
+/* ---------- 資料更新 ---------- */
+let lastSig="";
+function onData(){
+  const sig=JSON.stringify([S.problems,S.solutions,S.counts,[...S.mine],S.offline,S.isOwner]);
+  if(sig===lastSig){return}lastSig=sig;
+  placeProblems();
+  const open=S.problems.filter(p=>solsFor(p.id).length===0).length;
+  $("sOpen").textContent=open;$("sProb").textContent=S.problems.length;$("sSol").textContent=S.solutions.length;
+  $("sMine").textContent=S.solutions.filter(s=>s.by===myId()).length;
+  setNotice();
+  if(panelView&&(panelView.type==="problem"||panelView.type==="list")){
+    const ae=document.activeElement;if(!(ae&&(ae.id==="solText"||ae.id==="nickIn")))renderPanel();
+  }
+}
+requestAnimationFrame(frame);
+updateMe();
+if(!hasId())openPanel({type:"nick"});else if(!LS.get("isle_seen",0))openPanel({type:"how"});
+initData();
+})();
 </script>
+
 </body>
 </html>
